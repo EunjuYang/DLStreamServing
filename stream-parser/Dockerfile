@@ -8,12 +8,11 @@ ARG Look_Forward_Step
 ARG Look_Forward_Win_Size
 ARG Is_Online_Train=False
 
-RUN apt-get update && \
-  apt-get install -y software-properties-common && \
-  add-apt-repository ppa:deadsnakes/python-3.6
 RUN apt-get update
-
-RUN apt-get install -y build-essential python3.6 python3.6-dev python3-pip python3.6-venv
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository -y ppa:fkrull/deadsnakes
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends python3.6 python3.6-dev python3-pip python3-setuptools python3-wheel gcc
 RUN apt-get install -y git
 
 # update pip
@@ -22,7 +21,7 @@ RUN python3.6 -m pip install wheel
 RUN pip3 install confluent-kafka
 
 RUN git clone https://github.com/EunjuYang/DLStreamServing.git
-WORKDIR /workspace/DLStreamServing/stream-parser
+WORKDIR /DLStreamServing/stream-parser
 ENV BOOTSTRAP_SERVERS=Bootstrap_Servers
 ENV LOOK_BACK_WIN_SIZE=Loop_Back_Win_Size
 ENV INPUT_SHIRT_STEP=Input_Shift_Step
