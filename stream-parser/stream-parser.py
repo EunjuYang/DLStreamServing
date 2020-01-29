@@ -108,7 +108,6 @@ class StreamParser:
     def train_parser(self):
         data = ""
         small_delim = ","
-        delim = ";"
         is_produce = False
 
         # Simple Parser does not consider multi-modality
@@ -120,7 +119,6 @@ class StreamParser:
             for j in range(self.look_forward_win_size):
                 data += self.buffer[0][self.loop_back_win_size + self.look_forward_step - 1 + j] + small_delim
 
-            data += delim
 
             # remove one time step data from buffer
             for _ in range(self.input_shift_step):
@@ -131,7 +129,6 @@ class StreamParser:
 
     def multi_parser(self):
         data = ""
-        delim = ";"
         small_delim = ","
         is_produce = False
 
@@ -140,7 +137,6 @@ class StreamParser:
                 for j in range(self.loop_back_win_size):
                     data += self.buffer[i][j] + small_delim
 
-                data += delim
                 # remove one time step data from buffer
                 for _ in range(self.input_shift_step):
                     self.buffer[i].pop(0)
@@ -151,7 +147,6 @@ class StreamParser:
     def simple_parser(self):
 
         data = ""
-        delim = ";"
         small_delim = ","
         is_produce = False
 
@@ -161,7 +156,6 @@ class StreamParser:
             for j in range(self.loop_back_win_size):
                 data += self.buffer[0][j] + small_delim
 
-            data += delim
             # remove one time step data from buffer
             for _ in range(self.input_shift_step):
                 self.buffer[0].pop(0)
