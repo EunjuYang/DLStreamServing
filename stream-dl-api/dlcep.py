@@ -39,7 +39,7 @@ class StreamDLStub():
             self.is_train = is_train
             self.lf_size = lf_size
 
-        self.consumer.run()
+        self.consumer.start()
 
     def _get_stream_fmt_from_broker(self):
         # grpc call
@@ -65,16 +65,18 @@ class StreamDLStub():
         while True:
 
             x_shape = (self.batch_size, self.lb_size)
-            y_shape = (self.batch_size, self.lf_siz)
+            y_shape = (self.batch_size, self.lf_size)
             x_batch = np.zeros(shape=x_shape, dtype=self.dtype)
             y_batch = np.zeros(shape=y_shape, dtype=self.dtype)
 
-            while len(self.buffer < self.batch_size):
+
+            while len(self.buffer) < self.batch_size:
                 time.sleep(1)
 
             for i in range(self.batch_size):
-                x_batch[i] = self.buffer[i, :self.lb_size]
-                y_batch[i] = self.buffer[i, self.lb_size:]
+                x_batch[i] = self.buffer[0][:self.lb_size]
+                y_batch[i] = self.buffer[0][self.lb_size:]
+                self.buffer.pop(0)
 
             yield (x_batch, y_batch)
 
@@ -124,7 +126,7 @@ class Consumer(threading.Thread):
                     continue
             else:
                 data = msg.value().decode('utf-8').split(',')
-                data = np.array(data)
+                data = np.array(data[:-1])
                 data = data.astype(self.dtype)
                 self.buffer.append(data)
 
