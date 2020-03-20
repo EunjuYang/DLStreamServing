@@ -47,6 +47,9 @@ class Producer:
             self.producer.poll(5)  # wait time to free buffer
             self.producer.produce(self.topic, data.encode('utf-8'))
 
+        #self.producer.flush()
+
+    def fin(self):
         self.producer.flush()
 
 
@@ -104,6 +107,8 @@ class StreamParser:
                 self.producer.produce(data=data)
             else:
                 time.sleep(0.01)
+
+        self.producer.fin()
 
     def train_parser(self):
         data = ""

@@ -4,6 +4,12 @@ Stream parser is automatically deployed by Stream Broker Daemon.
 The stream parser is run as container.
 To run this stream-parser manually, please use command below.
 
+### Dependency
+
+- python 3.6
+- confluent-kafka (1.2.0)
+- kafka-python (1.4.7)
+
 ```bash
 $ docker build -t dlstream/stream-parser:v01 \
                --build-arg Stream_Parser={KafkaNode0:portnum},{KafkaNode1:portnum},... \
