@@ -5,7 +5,7 @@ This library is used after the deep learning model is deployed.
 
 ### Dependency
 
-- Python 3.6
+- Python >= 3.6
 - confluent-kafka (1.2.0)
 - kafka-python (1.4.7)
 

@@ -68,8 +68,9 @@ class StreamDLStub():
 
         while True:
             if len(self.buffer) == 0:
+                time.sleep(0.1)
                 continue
-            if len(self.buffer) < self.batch_size:
+            elif len(self.buffer) < self.batch_size:
                 bs = len(self.buffer)
             else:
                 bs = self.batch_size
@@ -95,14 +96,14 @@ class StreamDLStub():
             y_batch = np.zeros(shape=y_shape, dtype=self.dtype)
 
             while len(self.buffer) < self.batch_size:
-                time.sleep(0.5)
+                time.sleep(0.1)
 
             for i in range(self.batch_size):
                 x_batch[i] = self.buffer[0][:self.lb_size]
                 y_batch[i] = self.buffer[0][self.lb_size:]
                 self.buffer.pop(0)
 
-            yield (x_batch, y_batch)
+            yield (self.batch_size, x_batch, y_batch)
 
 
 class Consumer(threading.Thread):
