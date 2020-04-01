@@ -131,8 +131,8 @@ class inMemory:
     def get(self):
         x, y = [], []
         for i in range(len(self.prev_memcnt)):
-            x.append(self.memory_data[i, :self.memcnt[i]]) if self.memcnt[i] else None
-            y.append(self.memory_target[i, :self.memcnt[i]]) if self.memcnt[i] else None
+            x.append(self.memory_data[i, :self.prev_memcnt[i]]) if self.prev_memcnt[i] else None
+            y.append(self.memory_target[i, :self.prev_memcnt[i]]) if self.prev_memcnt[i] else None
         return x, y
 
     def compare(self):
