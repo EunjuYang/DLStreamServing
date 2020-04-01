@@ -104,8 +104,6 @@ def project2cone2(gradient_np, memories_np, margin=0.5, eps=1e-3):
     return x
 
 
-# This is a inMemory for Continual Learning
-# Therefore, we need to additionally create inMemory for Incremental Learning
 class inMemory:
 
     def __init__(self, num_ami, episodic_mem_size, b_input_shape, b_output_shape):
@@ -115,7 +113,7 @@ class inMemory:
         self.memory_data = np.zeros([num_ami, episodic_mem_size] + list(b_input_shape[1:]))
         self.memory_target = np.zeros([num_ami, episodic_mem_size] + list(b_output_shape[1:]))
 
-
+    # This is a ring-buffer method which is compared with proposed method
     def insert(self, x, y, ids):
         argindex = np.squeeze(np.argsort(ids, axis=0, kind='heapsort'))
         u, indices = np.unique(ids[argindex], return_index=True)
@@ -140,8 +138,6 @@ class inMemory:
     def compare(self):
         pass
 
-    def update(self):
-        pass
 
 
 class ContinualDL(OnlineDL):
@@ -150,12 +146,15 @@ class ContinualDL(OnlineDL):
         super(ContinualDL, self).__init__(model, online_method, framework)
         self.inMemory = inMemory(num_ami, episodic_mem_size, self.batch_input_shape, self.batch_output_shape)
         self.projected_gradients = []
-        for v in range(len(self.model.trainable_weights)):
+        for v in range(len(self.model.trainable_variables)):
             self.projected_gradients.append(
-                tf.Variable(tf.zeros(model.trainable_weights[v].get_shape()), trainable=False))
+                tf.Variable(tf.zeros(self.model.trainable_variables[v].get_shape()), trainable=False))
+
+
 
 
     def consume(self, data, target, id):
+
         data = data.reshape(self.batch_input_shape)
         x = tf.cast(data, tf.float32)
         with tf.GradientTape() as tape:
@@ -183,9 +182,17 @@ class ContinualDL(OnlineDL):
             if np.sum(np.less(array_dotp, 0)):
                 flat_now_grad = project2cone2(flat_now_grad.numpy().astype('float64'),
                                          np.asarray(flat_prev_grads, dtype=np.float64), margin=0.5)
+        offset = 0
+        for v in self.projected_gradients:
+            shape = v.get_shape()
+            v_params = 1
+            for dim in shape:
+                v_params *= dim
+            v.assign(tf.reshape(tf.cast(flat_now_grad[offset:offset + v_params], dtype=tf.float32), shape))
+            offset += v_params
 
-
-        print('hi ch')
+        self.opt_fn.apply_gradients(
+            zip(self.projected_gradients, self.model.trainable_weights))
 
 
 def _data_generator_for_test(size, type='value', range=(1,2)):
@@ -227,4 +234,3 @@ if __name__ == '__main__':
 
     x = ContinualDL(model, num_ami=num_ami)
     x.consume(batch_input_x, batch_input_y, batch_ami_id)
-    print('hi')
