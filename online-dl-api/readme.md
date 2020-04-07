@@ -13,4 +13,5 @@ To support the function of online deep learning with using common deep learning 
   * compare_consume : continual learning with proposed scheduling method by changha lee
 * inMemory : ring-buffer for continual learning
 * cossimMemory : cosine similarity based buffer
-  
+  * insert : without proposed method by changha lee
+  * compare_insert with proposed method by changha lee
