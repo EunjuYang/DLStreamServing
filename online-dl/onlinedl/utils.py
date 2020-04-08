@@ -10,3 +10,6 @@ class ModelManager:
     def pull(self):
         pass
 
+    def push(self, file_path):
+        pass
+

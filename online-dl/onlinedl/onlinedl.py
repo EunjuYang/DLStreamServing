@@ -166,8 +166,8 @@ class OnlineDL:
     def __init__(self,model_name,online_method='cont',framework='keras'):
 
         # TODO
-        model_manager = ModelManager()
-        model_path = model_manager.pull(model_name)
+        self.model_manager = ModelManager()
+        model_path = self.model_manager.pull(model_name)
 
         # Parameters
         online_method = os.getenv('ONLINE_METHOD', online_method)
@@ -220,6 +220,7 @@ class OnlineDL:
 
     def save(self):
         self.model.save_weights(self.model_filename + '/ckpts')
+        self.model_manager.push(self.model_filename + '/ckpts')
         # TODO push to model repository
 
     @staticmethod
