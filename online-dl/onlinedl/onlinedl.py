@@ -1,34 +1,17 @@
-import os, time
+import os
 import tensorflow as tf
-import tensorflow.keras as keras
 import tensorflow.keras.backend as K
+from tensorflow.keras.models import Sequential
 import quadprog
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from utils import ModelManager
 
-
-class MyError(Exception):
+class OnlineDLError(Exception):
     __module__ = Exception.__module__
 
     def __str__(self):
         return "not yet supported"
-
-
-def _check_attribute_error(target, arg_name):
-    if arg_name == 'tt':
-        try:
-            target.target_tensors
-        except AttributeError:
-            return None
-        else:
-            return target.target_tensors
-    elif arg_name == 'wm':
-        try:
-            target.weighted_matrics
-        except AttributeError:
-            return None
-        else:
-            return target.weighted_matrics
 
 
 def _k_subabs(y_true, y_pred):
@@ -59,6 +42,13 @@ def project2cone2(gradient_np, memories_np, margin=0.5, eps=1e-3):
 class inMemory:
 
     def __init__(self, num_ami, episodic_mem_size, b_input_shape, b_output_shape):
+        """
+        Memory used in ContinualDL. inMemory works in "ring buffer" manner
+        :param num_ami:
+        :param episodic_mem_size:
+        :param b_input_shape:
+        :param b_output_shape:
+        """
         self.memcnt = [0] * num_ami
         self.episodic_mem_size = episodic_mem_size
         self.memory_data = np.zeros([num_ami, episodic_mem_size] + list(b_input_shape[1:]))
@@ -88,7 +78,15 @@ class inMemory:
 
 
 class cossimMemory(inMemory):
+
     def __init__(self, num_ami, episodic_mem_size, b_input_shape, b_output_shape):
+        """
+        Memory used in ContinualDL. cossimMemory works using cos-similarity
+        :param num_ami:
+        :param episodic_mem_size:
+        :param b_input_shape:
+        :param b_output_shape:
+        """
         super(cossimMemory, self).__init__(num_ami, episodic_mem_size, b_input_shape, b_output_shape)
         self.given_criteria = np.ones((b_input_shape[1:]))
 
@@ -165,12 +163,13 @@ class cossimMemory(inMemory):
 
 class OnlineDL:
 
-    def __init__(self,
-                 model_path,
-                 online_method='cont',
-                 framework='keras'):
-        super(OnlineDL, self).__init__()
-        model_path = os.getenv('MODEL_PATH', model_path)
+    def __init__(self,model_name,online_method='cont',framework='keras'):
+
+        # TODO
+        model_manager = ModelManager()
+        model_path = model_manager.pull(model_name)
+
+        # Parameters
         online_method = os.getenv('ONLINE_METHOD', online_method)
         framework = os.getenv('FRAMEWORK', framework)
         self.save_weight = bool(os.getenv('SAVEWEIGHT', None))
@@ -184,8 +183,8 @@ class OnlineDL:
         if self.online_method == 'inc':
             if self.framework == 'keras':
                 # check attribute error which is mainly caused by not declared value.
-                _wm = _check_attribute_error(model, 'wm')
-                _tt = _check_attribute_error(model, 'tt')
+                _wm = self._check_attribute_error(model, 'wm')
+                _tt = self._check_attribute_error(model, 'tt')
 
                 # recompile the keras model
                 self.model = model.compile(optimizer=model.optimizer,
@@ -196,13 +195,14 @@ class OnlineDL:
                                            weighted_metrics=_wm,
                                            target_tensors=_tt)
             elif self.framework == 'tf':
-                raise MyError  # TODO make tf code
+                # TODO make tf code
+                raise OnlineDLError
 
         elif self.online_method == 'cont':
             if self.framework == 'keras':
                 # check attribute error which is mainly caused by not declared value.
-                _wm = _check_attribute_error(model, 'wm')
-                _tt = _check_attribute_error(model, 'tt')
+                _wm = self._check_attribute_error(model, 'wm')
+                _tt = self._check_attribute_error(model, 'tt')
 
                 self.model = Sequential()
                 for layer in model.layers:
@@ -215,21 +215,40 @@ class OnlineDL:
 
 
             elif self.framework == 'tf':
-                raise MyError  # TODO make tf code
+                # TODO make tf code
+                raise OnlineDLError
 
     def save(self):
         self.model.save_weights(self.model_filename + '/ckpts')
+        # TODO push to model repository
+
+    @staticmethod
+    def _check_attribute_error(target, arg_name):
+        if arg_name == 'tt':
+            try:
+                target.target_tensors
+            except AttributeError:
+                return None
+            else:
+                return target.target_tensors
+        elif arg_name == 'wm':
+            try:
+                target.weighted_matrics
+            except AttributeError:
+                return None
+            else:
+                return target.weighted_matrics
 
 
 class ContinualDL(OnlineDL):
 
-    def __init__(self, model, online_method='cont', framework='keras', mem_method='ringbuffer', num_ami=1,
-                 episodic_mem_size=100):
+    def __init__(self, model, online_method='cont', framework='keras', mem_method='ringbuffer', num_ami=1, episodic_mem_size=100, cont_method=''):
         super(ContinualDL, self).__init__(model, online_method, framework)
 
         num_ami = int(os.getenv('NUM_AMI', num_ami))
         episodic_mem_size = int(os.getenv('EPISODIC_MEM_SIZE', episodic_mem_size))
         self.mem_method = os.getenv('MEM_METHOD', mem_method)
+        self.cont_method = os.getenv('CONT_METHOD', cont_method)
 
         if self.mem_method == 'ringbuffer':
             self.inMemory = inMemory(num_ami, episodic_mem_size, self.batch_input_shape, self.batch_output_shape)
@@ -240,8 +259,12 @@ class ContinualDL(OnlineDL):
             self.projected_gradients.append(
                 tf.Variable(tf.zeros(self.model.trainable_variables[v].get_shape()), trainable=False))
 
-    # this consume function exists for ring-buffer method of original continual learning
-    def consume(self, data, target, id):
+        if self.cont_method == "SCHEDULE_METHOD":
+            self.consume = self._compare_consume
+        else:
+            self.consume = self._consume
+
+    def _consume(self, data, target, id):
 
         data = data.reshape(self.batch_input_shape)
         x = tf.cast(data, tf.float32)
@@ -283,8 +306,7 @@ class ContinualDL(OnlineDL):
         self.opt_fn.apply_gradients(
             zip(self.projected_gradients, self.model.trainable_weights))
 
-    # this compare_consume function exists for proposed method by changha lee
-    def compare_consume(self, data, target, id):
+    def _compare_consume(self, data, target, id):
         data = data.reshape(self.batch_input_shape)
         x = tf.cast(data, tf.float32)
         with tf.GradientTape() as tape:
@@ -326,60 +348,8 @@ class ContinualDL(OnlineDL):
         self.opt_fn.apply_gradients(
             zip(self.projected_gradients, self.model.trainable_weights))
 
+class IncrementalDL(OnlineDL):
 
-def _data_generator_for_test(size, type='value', range=(1, 2)):
-    if type == 'int':
-        return np.random.randint(range[0], range[1], size=size)
-    elif type == 'value':
-        return np.random.rand(size)
-
-
-# This is main code for TEST
-if __name__ == '__main__':
-    import tensorflow as tf
-    from tensorflow.keras.models import Sequential
-    from tensorflow.keras.layers import LSTM, Dense, Conv1D
-
-    gpu_devices = tf.config.experimental.list_physical_devices('GPU')
-    for device in gpu_devices:
-        tf.config.experimental.set_memory_growth(device, True)
-
-    # Client creates model with optimizer and loss function.
-    model = Sequential()
-    model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(6, 6)))
-    model.add(LSTM(50, activation='relu'))
-    model.add(Dense(1))
-    model.compile(optimizer='Adadelta',
-                  loss='mse')
-    # train model should be saved with both weight and optimizer,
-    # therefore, client should use "model.save()" method.
-    model_path = '/home/ncl/chlee/kepco-exp/test_model.h5'
-    model.save(model_path)
-
-    num_ami = 10
-    batch_size = 5
-    look_back = 36
-    look_forward = 1
-
-    # online-DL prototype code will be used like below
-    '''
-    (stream_generator)
-    OnlineDL = ContinualDL(...)
-    while():
-        x, y, id = next(stream_generator)
-        OnlineDL.compare_consume(x, y, id)
-        OnlineDL.save()
-    '''
-    x = ContinualDL(model_path, num_ami=num_ami, mem_method='cossim')
-    for i in range(2):
-        # pseudo data generator, batch_-(input_x, input_y, ami_id)
-        # we will replace it to stream-dl-api
-        batch_input_x = _data_generator_for_test(batch_size * look_back)
-        batch_input_x = batch_input_x.reshape(batch_size, look_back)
-        batch_input_y = _data_generator_for_test(batch_size * look_forward)
-        batch_input_y = batch_input_y.reshape(batch_size, look_forward)
-        batch_ami_id = _data_generator_for_test(batch_size * look_forward, type='int', range=(0, num_ami))
-        batch_ami_id = batch_ami_id.reshape(batch_size, look_forward)
-
-        x.compare_consume(batch_input_x, batch_input_y, batch_ami_id)
-        x.save()
+    def __init__(self):
+        super(IncrementalDL, self).__init__()
+        pass
