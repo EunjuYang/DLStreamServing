@@ -47,8 +47,6 @@ class Producer:
             self.producer.poll(5)  # wait time to free buffer
             self.producer.produce(self.topic, data.encode('utf-8'))
 
-        #self.producer.flush()
-
     def fin(self):
         self.producer.flush()
 
@@ -66,6 +64,7 @@ class StreamParser:
         self.src = os.environ['SRC']
         self.dst = os.environ['DST']
         self.group_id = self.src + "_" + self.dst
+        self._param_check(self.src)
 
         self.setting = {
             'bootstrap.servers': self.bootstrap_servers,
@@ -91,6 +90,18 @@ class StreamParser:
                                            index=i,
                                            buffer=self.buffer))
             self.consumers[i].start()
+
+    @staticmethod
+    def _param_check(src):
+        """
+        :return:
+        """
+        try:
+            int(src)
+            return True
+        except ValueError:
+            print("Please set 'SRC' as AMI id only, i.e. it should be nonnegative integer")
+            exit(0)
 
     def run(self):
 
@@ -124,6 +135,8 @@ class StreamParser:
             for j in range(self.look_forward_win_size):
                 data += self.buffer[0][self.loop_back_win_size + self.look_forward_step - 1 + j] + small_delim
 
+            # train parser contains [ (x, ...), (y, ...), id ]
+            data += self.src + small_delim
 
             # remove one time step data from buffer
             for _ in range(self.input_shift_step):
