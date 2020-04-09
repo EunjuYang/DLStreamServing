@@ -1,0 +1,1 @@
+python3.6 -m grpc_tools.protoc -I. --python_out=./modelrepo/ --grpc_python_out=./modelrepo/ ./chunk.proto
