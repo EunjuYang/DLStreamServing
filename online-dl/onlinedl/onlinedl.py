@@ -1,10 +1,11 @@
-import os
+import os, time
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.models import Sequential
 import quadprog
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.linear_model import LinearRegression
 from utils import ModelManager
 
 class OnlineDLError(Exception):
@@ -351,6 +352,46 @@ class ContinualDL(OnlineDL):
 
 class IncrementalDL(OnlineDL):
 
-    def __init__(self):
-        super(IncrementalDL, self).__init__()
+    def __init__(self, model, online_method='inc', framework='keras'):
+
+        super(IncrementalDL, self).__init__(model, online_method, framework)
+        self.beta, self.beta1 = self._profile()
+
         pass
+
+    # profiling procedure is implemented at once when calling __init__ function.
+    def _profile(self):
+        # save weight to restore self.model.weights
+        saved_weights = self.model.get_weights()
+
+        inp = []
+        profile = []
+        batch = 32
+        epoch = 30
+
+        # We checked longer delay when first calling model.fit() than after first.
+        # Therefore, for warm-start, we call model.fit() before profiling.
+        dataX, dataY = self._build_data_for_profile(batch)
+        self.model.fit(dataX, dataY, batch_size=batch, epochs=1, verbose=0, shuffle=False)
+
+        for i in range(1, epoch+1, 1):
+            dataX, dataY = self._build_data_for_profile(batch)
+            s = time.time()
+            self.model.fit(dataX, dataY, batch_size=batch, epochs=i, verbose=0, shuffle=False)
+            profile += [time.time() - s]
+            inp += [i]
+        lr = LinearRegression().fit(np.array(inp).reshape((-1, 1)), profile)
+
+        # restore weight in self.model.weights
+        self.model.set_weights(saved_weights)
+        return lr.coef_, lr.intercept_
+
+    def _build_data_for_profile(self, size):
+        # calculate x_shape and y_shape
+        x_shape, y_shape = 1, 1
+        for i in self.batch_input_shape[1:]:
+            x_shape *= i
+        for i in self.batch_output_shape[1:]:
+            y_shape *= i
+        return np.random.rand(size*x_shape).reshape(self.batch_input_shape), \
+               np.random.rand(size*y_shape).reshape(self.batch_output_shape)
