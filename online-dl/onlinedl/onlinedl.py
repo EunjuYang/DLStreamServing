@@ -355,12 +355,11 @@ class IncrementalDL(OnlineDL):
     def __init__(self, model, online_method='inc', framework='keras'):
 
         super(IncrementalDL, self).__init__(model, online_method, framework)
-        self.beta, self.beta1 = self._profile()
 
         pass
 
     # profiling procedure is implemented at once when calling __init__ function.
-    def _profile(self):
+    def profile(self):
         # save weight to restore self.model.weights
         saved_weights = self.model.get_weights()
 
@@ -384,7 +383,7 @@ class IncrementalDL(OnlineDL):
 
         # restore weight in self.model.weights
         self.model.set_weights(saved_weights)
-        return lr.coef_, lr.intercept_
+        return lr.coef_[0], lr.intercept_
 
     def _build_data_for_profile(self, size):
         # calculate x_shape and y_shape
