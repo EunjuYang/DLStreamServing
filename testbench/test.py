@@ -1,5 +1,6 @@
 from dlcep import StreamDLstub
 from onlinedl import ContinualDL
+from onlinedl import IncrementalDL
 import numpy as np
 
 
@@ -15,6 +16,12 @@ num_ami = 10
 stream_stub = StreamDLStub(kafka_bk=kafka_broker, cep_id=cep_id, stream_bk=stream_bk, batch_size=batch_size, dtype=_dtype)
 stream_generator = stream_stub.batch_train_generator()
 online_dl = ContinualDL(model_path, num_ami=num_ami, mem_method='cossim')
+
+# IncrementalDL is different against ContinualDL
+# because it transfers the result of model.profile() to StreamDLStub
+online_dl = IncrementalDL(model_path)
+beta, beta1 = online_dl.profile()
+stream_generator = stream_stub.batch_interaction_train_generator(beta, beta1)
 
 while True:
     x_batch, y_batch, id_batch = next(stream_generator)

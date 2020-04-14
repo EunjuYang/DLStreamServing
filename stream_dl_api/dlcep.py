@@ -12,7 +12,13 @@ IS_BROKER = False
 
 class StreamDLStub():
 
-    def __init__(self, kafka_bk, cep_id, stream_bk, batch_size, dtype, adaptive_batch_mode=True):
+    def __init__(self,
+                 kafka_bk,
+                 cep_id,
+                 stream_bk,
+                 batch_size,
+                 dtype,
+                 adaptive_batch_mode=True):
         """
 
         :param kafka_bk: information of KAFKA Broker
@@ -104,6 +110,28 @@ class StreamDLStub():
                 self.buffer.pop(0)
 
             yield (self.batch_size, x_batch, y_batch)
+
+    def batch_interaction_train_generator(self, beta, beta1):
+        self.beta = beta
+        self.beta1 = beta1
+        while True:
+
+            x_shape = (self.batch_size, self.lb_size)
+            y_shape = (self.batch_size, self.lf_size)
+            x_batch = np.zeros(shape=x_shape, dtype=self.dtype)
+            y_batch = np.zeros(shape=y_shape, dtype=self.dtype)
+
+            while len(self.buffer) < self.batch_size:
+                time.sleep(1)
+
+            for i in range(self.batch_size):
+                x_batch[i] = self.buffer[0][:self.lb_size]
+                y_batch[i] = self.buffer[0][self.lb_size:]
+                self.buffer.pop(0)
+
+            prev_queue_size = len(self.buffer)
+
+            yield (x_batch, y_batch)
 
 
 class Consumer(threading.Thread):
