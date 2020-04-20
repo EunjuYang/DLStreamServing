@@ -14,7 +14,9 @@ _dtype = np.float32
 model_path = "path/to/model" # the model should be stored by using model.save() of Sequential model in Keras.
 num_ami = 10
 
-# ContinualDL
+'''
+ContinualDL should get id information from stream_generator
+'''
 stream_stub = StreamDLStub(kafka_bk=kafka_broker, cep_id=cep_id, stream_bk=stream_bk, batch_size=batch_size, dtype=_dtype)
 online_dl = ContinualDL(model_path, num_ami=num_ami, mem_method='cossim')
 stream_generator = stream_stub.batch_train_generator()
@@ -24,17 +26,19 @@ while True:
     online_dl.save()
 
 
-# IncrementalDL is different against ContinualDL
-# because it transfers the result of model.profile() to StreamDLStub
+'''
+IncrementalDL is different from ContinualDL
+because it transfers the result, beta and beta1, of model.profile() to StreamDLStub
+and 
+'''
 Incre_trainer = IncrementalDL(model_path)
 beta, beta1 = Incre_trainer.profile()
 
 Incre_stream_stub = IncStreamDLStub(kafka_bk=kafka_broker, cep_id=cep_id, stream_bk=stream_bk, batch_size=batch_size, dtype=_dtype)
 Incre_stream_stub.set_beta_for_incremental(beta, beta1)
 
-Incre_stream_generator = Incre_stream_stub.batch_interaction_train_generator()
-
-test_error = 0.3 # We just follow the value in PhD Kim's source code.
+test_error = 0.3 # We just followed the value in PhD Kim's source code.
 while True:
-    x_batch, y_batch, epoch = next(Incre_stream_generator(test_error))
-    test_error = Incre_trainer.consume(x_batch, y_batch, epoch)
+    # Don't use next(generator) because we should pass test_error to calculate batch_size and epoch.
+    x_batch, y_batch, scailed_epoch = Incre_stream_stub.batch_train_generator(test_error)
+    test_error = Incre_trainer.consume(x_batch, y_batch, scailed_epoch)

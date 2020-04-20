@@ -125,8 +125,11 @@ class IncStreamDLStub(StreamDLStub):
         self.precision = 1e-10
         self.delta = 1e-2
         self.mult1 = 1
-        self.multiplier = (60000/(self.ld ** (1/3.)))   # normalization
+        self.multiplier = (60000 / (self.ld ** (1 / 3.)))  # normalization
 
+        # at newton_batch
+        self.suma = 0
+        self.count = 0
 
     def set_beta_for_incremental(self, beta, beta1):
         self.beta = beta
@@ -135,7 +138,7 @@ class IncStreamDLStub(StreamDLStub):
     def solver_naive2(self, a, b, d):
         b /= a
         d /= a
-        a = 1 # FIXME: Seems that it is not required.
+        a = 1  # FIXME: Seems that it is not required.
 
         q = (-b ** 2) / 9
         r = (-27 * d - 2 * b ** 3) / 54
@@ -151,7 +154,7 @@ class IncStreamDLStub(StreamDLStub):
             term1 = b / 3.0
             x1 = -term1 + s + t
             term1 += (s + t) / 2.0
-            realRoot12 = -term1 # FIXME: Seems that it is not required.
+            realRoot12 = -term1  # FIXME: Seems that it is not required.
             return x1
         else:
             print('nonono')
@@ -166,44 +169,43 @@ class IncStreamDLStub(StreamDLStub):
 
     def fe_batch(self, e, e_rate):
         d = self.batch_calc3_batch(e_rate, e, 1)
-        return (d ** 2) / self.ld / 2 + d * e * self.beta - self.beta1 * d * self.mult1 + self.multiplier * e_rate / e / d
+        return (
+                           d ** 2) / self.ld / 2 + d * e * self.beta - self.beta1 * d * self.mult1 + self.multiplier * e_rate / e / d
 
     def fed_batch(self, e, e_rate):
         return (self.fe_batch(e + self.delta, e_rate) - self.fe_batch(e, e_rate)) / self.delta
 
     def newton_batch(self, x_start, x_end, e_rate, go):
         x = go
-        dx = self.fed_batch(x, e_rate) # FIXME: Seems that it is not required.
+        dx = self.fed_batch(x, e_rate)  # FIXME: Seems that it is not required.
         r = 0.99
         a = 1
         x_prev = -1
         i = 0
         if True:
-            while math.fabs(x-x_prev) > self.precision:
+            while math.fabs(x - x_prev) > self.precision:
                 a *= r
                 dx = self.fed_batch(x, e_rate)
                 x_prev = x
-                x -= a*dx
+                x -= a * dx
                 x = x_end if x > x_end else x
-                x = x_start  if x < x_start else x
-                i=i+1
-        global suma
-        global count
-        suma = suma+i
-        count = count + 1
-        print('newton result', x_end, x, i, suma/float(count))
+                x = x_start if x < x_start else x
+                i = i + 1
+        self.suma = self.suma + i
+        self.count = self.count + 1
+        print('newton result', x_end, x, i, self.suma / float(self.count))
         return (self.batch_calc3_batch(e_rate, x, 1), x)
 
     def na(self, f):
         return int(math.floor(f))
 
     def batch_train_generator(self, test_err, FIX=None):
+
         self.err_queue.push(test_err)
 
-        timestep = time.time() - self.last_timestep
+        timestep = time.time() - self.last_timestep if self.last_timestep else 0
 
-        queue_size = len(self.buffer)
-        self.ld = (queue_size - self.prev_queue_size) / timestep if self.last_timestep else 1
+        self.ld = (len(self.buffer) - self.prev_queue_size) / timestep if self.last_timestep else 1
 
         req = self.beta1 / (1 - self.beta * self.ld)
         if timestep < req:
@@ -211,7 +213,7 @@ class IncStreamDLStub(StreamDLStub):
             timestep = req
 
         amount = sys.maxsize
-        while queue_size < amount:
+        while len(self.buffer) < amount:
             tmpe = (timestep - self.beta1) / (self.beta * self.ld * timestep)
 
             if FIX:
@@ -222,10 +224,10 @@ class IncStreamDLStub(StreamDLStub):
             epoch = max(int(math.floor(epoch)), 1)
             amount = max(self.na(batch_star), 1)
 
-            if queue_size < amount:
-                time.sleep((amount - queue_size) / self.ld - timestep)
-            elif int(math.floor(queue_size)) > amount:
-                print(f'check queue_size is {queue_size} and amount size is {amount}')
+            if len(self.buffer) < amount:
+                time.sleep((amount - len(self.buffer)) / self.ld - timestep)
+            elif int(math.floor(len(self.buffer))) > amount:
+                print(f'check len(self.buffer) is {len(self.buffer)} and amount size is {amount}')
 
         x_shape = (amount, self.lb_size)
         y_shape = (amount, self.lf_size)
@@ -234,13 +236,13 @@ class IncStreamDLStub(StreamDLStub):
 
         for i in range(amount):
             x_batch[i] = self.buffer[0][:self.lb_size]
-            y_batch[i] = self.buffer[0][self.lb_size:]
+            y_batch[i] = self.buffer[0][self.lb_size:-1]
             self.buffer.pop(0)
 
         self.prev_queue_size = len(self.buffer)
         self.last_timestep = time.time()
 
-        yield (x_batch, y_batch, epoch)
+        return (x_batch, y_batch, epoch)
 
 
 # SizeQueue is used in IncStreamDLStub()
