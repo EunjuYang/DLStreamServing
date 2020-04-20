@@ -106,7 +106,7 @@ class StreamDLStub():
 
             for i in range(self.batch_size):
                 x_batch[i] = self.buffer[0][:self.lb_size]
-                y_batch[i] = self.buffer[0][self.lb_size:]
+                y_batch[i] = self.buffer[0][self.lb_size:-1]
                 self.buffer.pop(0)
 
             yield (self.batch_size, x_batch, y_batch)
@@ -126,7 +126,7 @@ class StreamDLStub():
 
             for i in range(self.batch_size):
                 x_batch[i] = self.buffer[0][:self.lb_size]
-                y_batch[i] = self.buffer[0][self.lb_size:]
+                y_batch[i] = self.buffer[0][self.lb_size:-1]
                 self.buffer.pop(0)
 
             prev_queue_size = len(self.buffer)
