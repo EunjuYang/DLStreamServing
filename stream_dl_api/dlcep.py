@@ -88,7 +88,7 @@ class StreamDLStub():
 
             for i in range(bs):
                 x_batch[i] = self.buffer[0][:self.lb_size]
-                y_batch[i] = self.buffer[0][self.lb_size:]
+                y_batch[i] = self.buffer[0][self.lb_size:-1]
                 self.buffer.pop(0)
 
             yield (bs, x_batch, y_batch)
@@ -107,7 +107,7 @@ class StreamDLStub():
 
             for i in range(self.batch_size):
                 x_batch[i] = self.buffer[0][:self.lb_size]
-                y_batch[i] = self.buffer[0][self.lb_size:]
+                y_batch[i] = self.buffer[0][self.lb_size:-1]
                 self.buffer.pop(0)
 
             yield (self.batch_size, x_batch, y_batch)
@@ -143,7 +143,7 @@ class IncStreamDLStub(StreamDLStub):
         q = (-b ** 2) / 9
         r = (-27 * d - 2 * b ** 3) / 54
 
-        disc = q ** 3 + r ** 2
+ㅇ        disc = q ** 3 + r ** 2
 
         if disc > 0:
             s = r + (disc) ** (1 / 2.)
