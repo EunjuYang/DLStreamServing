@@ -214,7 +214,6 @@ class OnlineDL:
                 self.batch_input_shape = (-1,) + model.input_shape[1:]
                 self.batch_output_shape = (-1,) + model.output_shape[1:]
 
-
             elif self.framework == 'tf':
                 # TODO make tf code
                 raise OnlineDLError
@@ -352,11 +351,15 @@ class ContinualDL(OnlineDL):
 
 class IncrementalDL(OnlineDL):
 
-    def __init__(self, model, online_method='inc', framework='keras'):
+    def __init__(self, model_path, online_method='inc', framework='keras'):
 
-        super(IncrementalDL, self).__init__(model, online_method, framework)
-
+        super(IncrementalDL, self).__init__(model_path, online_method, framework)
         pass
+
+    def consume(self, x, y, epoch):
+        x = x.reshape(self.batch_input_shape)
+        history = self.model.fit(x, y, batch_size=len(x), epochs=epoch, shuffle=False, verbose=0)
+        return history.history['loss'][0]
 
     # profiling procedure is implemented at once when calling __init__ function.
     def profile(self):
