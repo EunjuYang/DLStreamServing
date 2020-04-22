@@ -6,7 +6,7 @@ import quadprog
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.linear_model import LinearRegression
-from utils import ModelManager
+from .utils import ModelManager
 
 class OnlineDLError(Exception):
     __module__ = Exception.__module__
