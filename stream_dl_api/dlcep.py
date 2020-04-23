@@ -101,6 +101,7 @@ class StreamDLStub():
             y_shape = (self.batch_size, self.lf_size)
             x_batch = np.zeros(shape=x_shape, dtype=self.dtype)
             y_batch = np.zeros(shape=y_shape, dtype=self.dtype)
+            id_batch = np.zeros(shape=(self.batch_size, 1), dtype=np.int32)
 
             while len(self.buffer) < self.batch_size:
                 time.sleep(0.1)
@@ -108,9 +109,10 @@ class StreamDLStub():
             for i in range(self.batch_size):
                 x_batch[i] = self.buffer[0][:self.lb_size]
                 y_batch[i] = self.buffer[0][self.lb_size:-1]
+                id_batch[i] = self.buffer[0][-1]
                 self.buffer.pop(0)
 
-            yield (self.batch_size, x_batch, y_batch)
+            yield (self.batch_size, x_batch, y_batch, id_batch)
 
 
 class IncStreamDLStub(StreamDLStub):
@@ -143,7 +145,7 @@ class IncStreamDLStub(StreamDLStub):
         q = (-b ** 2) / 9
         r = (-27 * d - 2 * b ** 3) / 54
 
-ㅇ        disc = q ** 3 + r ** 2
+        disc = q ** 3 + r ** 2
 
         if disc > 0:
             s = r + (disc) ** (1 / 2.)
@@ -199,7 +201,7 @@ class IncStreamDLStub(StreamDLStub):
     def na(self, f):
         return int(math.floor(f))
 
-    def batch_train_generator(self, test_err, FIX=None):
+    def _adaptive_batch_train_generator(self, test_err, FIX=None):
 
         self.err_queue.push(test_err)
 
