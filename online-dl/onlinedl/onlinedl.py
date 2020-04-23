@@ -185,7 +185,10 @@ class cossimMemory(inMemory):
 
 class OnlineDL:
 
-    def __init__(self,model_name,online_method='cont',framework='keras'):
+    def __init__(self,
+                 model_name,
+                 online_method,
+                 framework):
 
         # TODO
         self.model_manager = ModelManager()
@@ -259,8 +262,16 @@ class OnlineDL:
 
 class ContinualDL(OnlineDL):
 
-    def __init__(self, model, online_method='cont', framework='keras', mem_method='ringbuffer', num_ami=1, episodic_mem_size=100, is_schedule=False):
-        super(ContinualDL, self).__init__(model, online_method, framework)
+    def __init__(self,
+                 model_name,
+                 online_method,
+                 framework,
+                 mem_method,
+                 num_ami,
+                 episodic_mem_size,
+                 is_schedule):
+
+        super(ContinualDL, self).__init__(model_name, online_method, framework)
 
         episodic_mem_size = episodic_mem_size
         self.mem_method = mem_method
@@ -365,7 +376,9 @@ class ContinualDL(OnlineDL):
 
 class IncrementalDL(OnlineDL):
 
-    def __init__(self, model_path, online_method='inc', framework='keras'):
+    def __init__(self, model_path,
+                 online_method,
+                 framework):
 
         super(IncrementalDL, self).__init__(model_path, online_method, framework)
         pass
