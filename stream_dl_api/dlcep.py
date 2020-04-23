@@ -85,13 +85,15 @@ class StreamDLStub():
             y_shape = (bs, self.lf_size)
             x_batch = np.zeros(shape=x_shape, dtype=self.dtype)
             y_batch = np.zeros(shape=y_shape, dtype=self.dtype)
+            id_batch = np.zeros(shape=(self.batch_size, 1), dtype=np.int32)
 
             for i in range(bs):
                 x_batch[i] = self.buffer[0][:self.lb_size]
                 y_batch[i] = self.buffer[0][self.lb_size:-1]
+                id_batch[i] = self.buffer[0][-1]
                 self.buffer.pop(0)
 
-            yield (bs, x_batch, y_batch)
+            yield (bs, x_batch, y_batch, id_batch)
 
     def _batch_train_generator(self):
 
