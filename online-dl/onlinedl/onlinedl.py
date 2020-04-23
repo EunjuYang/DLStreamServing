@@ -6,7 +6,7 @@ import quadprog
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.linear_model import LinearRegression
-from utils import ModelManager
+from .utils import ModelManager
 
 class OnlineDLError(Exception):
     __module__ = Exception.__module__
@@ -50,17 +50,26 @@ class inMemory:
         :param b_input_shape:
         :param b_output_shape:
         """
-        self.memcnt = [0] * num_ami
+        self.num_ami = num_ami
+        self.memcnt = [0] * self.num_ami
+        self.id_to_idx = {}
+        self._set_idx = 0
         self.episodic_mem_size = episodic_mem_size
-        self.memory_data = np.zeros([num_ami, episodic_mem_size] + list(b_input_shape[1:]))
-        self.memory_target = np.zeros([num_ami, episodic_mem_size] + list(b_output_shape[1:]))
+        self.memory_data = np.zeros([self.num_ami, episodic_mem_size] + list(b_input_shape[1:]))
+        self.memory_target = np.zeros([self.num_ami, episodic_mem_size] + list(b_output_shape[1:]))
 
     # This is a ring-buffer method which is compared with proposed method
     def insert(self, x, y, ids):
         argindex = np.squeeze(np.argsort(ids, axis=0, kind='heapsort'))
         u, indices = np.unique(ids[argindex], return_index=True)
+        if len(self.id_to_idx.keys()) != self.num_ami:
+            for id in u:
+                if not id in self.id_to_idx:
+                    self.id_to_idx[id] = self._set_idx
+                    self._set_idx += 1
         bsz_list = np.append(indices, [len(x)])
         for enum, id in enumerate(u):
+            id = self.id_to_idx[id]
             endcnt = min(self.episodic_mem_size, self.memcnt[id] + bsz_list[enum + 1] - bsz_list[enum])
             effbsz = endcnt - self.memcnt[id]
             self.memory_data[id, self.memcnt[id]: endcnt] = x[argindex][bsz_list[enum + 1] - effbsz:bsz_list[enum + 1]]
@@ -94,8 +103,14 @@ class cossimMemory(inMemory):
     def insert(self, x, y, ids):
         argindex = np.squeeze(np.argsort(ids, axis=0, kind='heapsort'))
         u, indices = np.unique(ids[argindex], return_index=True)
+        if len(self.id_to_idx.keys()) != self.num_ami:
+            for id in u:
+                if not id in self.id_to_idx:
+                    self.id_to_idx[id] = self._set_idx
+                    self._set_idx += 1
         bsz_list = np.append(indices, [len(x)])
         for enum, id in enumerate(u):
+            id = self.id_to_idx[id]
             tmp_np = np.concatenate(
                 (self.memory_data[id, :self.memcnt[id]], x[argindex][bsz_list[enum]:bsz_list[enum + 1]]))
             if tmp_np.shape[0] != 1:
@@ -125,10 +140,16 @@ class cossimMemory(inMemory):
     def compare_insert(self, x, y, ids):
         argindex = np.squeeze(np.argsort(ids, axis=0, kind='heapsort'))
         u, indices = np.unique(ids[argindex], return_index=True)
+        if len(self.id_to_idx.keys()) != self.num_ami:
+            for id in u:
+                if not id in self.id_to_idx:
+                    self.id_to_idx[id] = self._set_idx
+                    self._set_idx += 1
 
         TAM = [0] * len(u)
         bsz_list = np.append(indices, [len(x)])
         for enum, id in enumerate(u):
+            id = self.id_to_idx[id]
             tmp_np = np.concatenate(
                 (self.memory_data[id, :self.memcnt[id]], x[argindex][bsz_list[enum]:bsz_list[enum + 1]]))
             if tmp_np.shape[0] != 1:
@@ -169,11 +190,6 @@ class OnlineDL:
         # TODO
         self.model_manager = ModelManager()
         model_path = self.model_manager.pull(model_name)
-
-        # Parameters
-        online_method = os.getenv('ONLINE_METHOD', online_method)
-        framework = os.getenv('FRAMEWORK', framework)
-        self.save_weight = bool(os.getenv('SAVEWEIGHT', None))
 
         self.model_filename = model_path.split('/')[-1]
         self.online_method = online_method
@@ -219,8 +235,8 @@ class OnlineDL:
                 raise OnlineDLError
 
     def save(self):
-        self.model.save_weights(self.model_filename + '/ckpts')
-        self.model_manager.push(self.model_filename + '/ckpts')
+        self.model.save(self.model_filename + '/model.h5')
+        self.model_manager.push(self.model_filename + '/model.h5')
         # TODO push to model repository
 
     @staticmethod
@@ -243,13 +259,11 @@ class OnlineDL:
 
 class ContinualDL(OnlineDL):
 
-    def __init__(self, model, online_method='cont', framework='keras', mem_method='ringbuffer', num_ami=1, episodic_mem_size=100, cont_method=''):
+    def __init__(self, model, online_method='cont', framework='keras', mem_method='ringbuffer', num_ami=1, episodic_mem_size=100, is_schedule=False):
         super(ContinualDL, self).__init__(model, online_method, framework)
 
-        num_ami = int(os.getenv('NUM_AMI', num_ami))
-        episodic_mem_size = int(os.getenv('EPISODIC_MEM_SIZE', episodic_mem_size))
-        self.mem_method = os.getenv('MEM_METHOD', mem_method)
-        self.cont_method = os.getenv('CONT_METHOD', cont_method)
+        episodic_mem_size = episodic_mem_size
+        self.mem_method = mem_method
 
         if self.mem_method == 'ringbuffer':
             self.inMemory = inMemory(num_ami, episodic_mem_size, self.batch_input_shape, self.batch_output_shape)
@@ -260,7 +274,7 @@ class ContinualDL(OnlineDL):
             self.projected_gradients.append(
                 tf.Variable(tf.zeros(self.model.trainable_variables[v].get_shape()), trainable=False))
 
-        if self.cont_method == "SCHEDULE_METHOD":
+        if is_schedule:
             self.consume = self._compare_consume
         else:
             self.consume = self._consume
