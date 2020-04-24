@@ -6,7 +6,7 @@ import quadprog
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.linear_model import LinearRegression
-from .utils import ModelManager
+from onlinedl.utils import ModelManager
 
 class OnlineDLError(Exception):
     __module__ = Exception.__module__
@@ -185,14 +185,19 @@ class cossimMemory(inMemory):
 
 class OnlineDL:
 
-    def __init__(self,
-                 model_name,
-                 online_method,
-                 framework):
+    def __init__(self,model_name,online_method,framework,repo_addr):
+        """
 
-        # TODO
-        self.model_manager = ModelManager()
-        model_path = self.model_manager.pull(model_name)
+        :param model_name:
+        :param online_method:
+        :param framework:
+        :param repo_addr:  model repository address
+        """
+
+        # TODO - changha check
+        self.model_manager = ModelManager(repo_addr, model_name)
+        model_path = "/tmp/%s_init" % model_name
+        self.model_manager.download_model(model_path)
 
         self.model_filename = model_path.split('/')[-1]
         self.online_method = online_method
@@ -239,8 +244,8 @@ class OnlineDL:
 
     def save(self):
         self.model.save(self.model_filename + '/model.h5')
-        self.model_manager.push(self.model_filename + '/model.h5')
-        # TODO push to model repository
+        # TODO changha check
+        self.model_manager.upload_model(self.model_filename + '/model.h5')
 
     @staticmethod
     def _check_attribute_error(target, arg_name):
@@ -262,16 +267,19 @@ class OnlineDL:
 
 class ContinualDL(OnlineDL):
 
-    def __init__(self,
-                 model_name,
-                 online_method,
-                 framework,
-                 mem_method,
-                 num_ami,
-                 episodic_mem_size,
-                 is_schedule):
+    def __init__(self,model_name,online_method,framework,mem_method,num_ami,episodic_mem_size,is_schedule,repo_addr):
+        """
+        :param model_name:
+        :param online_method:
+        :param framework:
+        :param mem_method:
+        :param num_ami:
+        :param episodic_mem_size:
+        :param is_schedule:
+        :param repo_addr:
+        """
 
-        super(ContinualDL, self).__init__(model_name, online_method, framework)
+        super(ContinualDL, self).__init__(model_name, online_method, framework, repo_addr)
 
         episodic_mem_size = episodic_mem_size
         self.mem_method = mem_method
@@ -376,11 +384,15 @@ class ContinualDL(OnlineDL):
 
 class IncrementalDL(OnlineDL):
 
-    def __init__(self, model_path,
-                 online_method,
-                 framework):
+    def __init__(self, model_path,online_method,framework,repo_addr):
+        """
+        :param model_path:
+        :param online_method:
+        :param framework:
+        :param repo_addr: repo address
+        """
 
-        super(IncrementalDL, self).__init__(model_path, online_method, framework)
+        super(IncrementalDL, self).__init__(model_path, online_method, framework, repo_addr)
         pass
 
     def consume(self, x, y, epoch):
