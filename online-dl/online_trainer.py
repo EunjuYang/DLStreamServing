@@ -23,6 +23,7 @@ if __name__ == '__main__':
             is_schedule = bool(os.environ['IS_SCHEDULE'])
         else:
             is_schedule = False
+    model_repo_addr = os.environ['MODEL_REPO_ADDR']
 
     cep_id = os.environ['CEP_ID']
     kafka_bk = os.environ['KAFKA_BK']
@@ -34,7 +35,8 @@ if __name__ == '__main__':
     if online_method == 'inc':
         trainer = IncrementalDL(model_name=model_name,
                                 online_method=online_method,
-                                framework=framework)
+                                framework=framework,
+                                repo_addr=model_repo_addr)
         beta, beta1 = trainer.profile()
         strstub = IncStreamDLStub(kafka_bk=kafka_bk,
                                cep_id=cep_id,
@@ -57,7 +59,8 @@ if __name__ == '__main__':
                               mem_method=mem_method,
                               num_ami=num_ami,
                               episodic_mem_size=episodic_mem_size,
-                              is_schedule=is_schedule)
+                              is_schedule=is_schedule,
+                              repo_addr=model_repo_addr)
         strstub = StreamDLStub(kafka_bk=kafka_bk,
                                cep_id=cep_id,
                                stream_bk=stream_bk,
