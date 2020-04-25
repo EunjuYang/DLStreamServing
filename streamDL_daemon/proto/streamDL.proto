@@ -1,0 +1,50 @@
+syntax="proto3";
+package streamDLbroker;
+
+
+// streamDLbroker
+service streamDLbroker{
+    rpc deploy_model(stream Model) returns (Reply) {}
+    rpc is_deployed_model(ModelName) returns (Reply) {}
+    rpc set_input(ModelInfo) returns (Reply) {}
+    rpc get_stream_list(null) returns (KafkaTopics) {}
+}
+
+message Chunk {
+    bytes buffer = 1;
+}
+
+message ModelName{
+    string name = 1;
+}
+
+message Model{
+    string name = 1;
+    repeated string stream_inputs = 2;
+    bytes buffer = 3;
+}
+
+message ModelInfo{
+    string name = 1;
+    repeated string stream_inputs = 2;
+    InputFmt input_fmt = 3;
+}
+
+message KafkaTopics{
+    repeated string topics = 1;
+}
+
+message InputFmt{
+    int32 input_window_size = 1;
+    int32 output_shift = 2;
+    int32 output_window_size = 3;
+}
+
+message Reply {
+    bool status = 1;
+    string message = 2;
+}
+
+message null{
+}
+
