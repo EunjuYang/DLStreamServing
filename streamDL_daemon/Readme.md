@@ -55,3 +55,4 @@ gRPC로 interface API를 제공합니다. 자세한 interface는 [streamDL.proto
     rpc set_input(ModelInfo) returns (Reply) {}
     rpc get_stream_list(null) returns (KafkaTopics) {}
 ```
+
