@@ -4,10 +4,17 @@ package streamDL;
 
 // streamDLbroker
 service streamDLbroker{
-    rpc deploy_model(stream Model) returns (Reply) {}
+    // deploy model
+    rpc set_deploy_model(stream Model) returns (Reply) {}
+
+    // return deployed model list
+    rpc get_deployed_model(null) returns (ModelList) {}
+
+    // check duplicate check
     rpc is_deployed_model(ModelName) returns (Reply) {}
-    rpc set_input(ModelInfo) returns (Reply) {}
-    rpc get_stream_list(null) returns (KafkaTopics) {}
+
+    // return ami lists available in the system
+    rpc get_ami_list(null) returns (AMIList) {}
 }
 
 message Chunk {
@@ -16,6 +23,10 @@ message Chunk {
 
 message ModelName{
     string name = 1;
+}
+
+message ModelList{
+    repeated Model model = 1;
 }
 
 message Model{
@@ -30,8 +41,8 @@ message ModelInfo{
     InputFmt input_fmt = 3;
 }
 
-message KafkaTopics{
-    repeated string topics = 1;
+message AMIList{
+    repeated string ami_id = 1;
 }
 
 message InputFmt{
