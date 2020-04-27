@@ -14,4 +14,4 @@ RUN python3.6 -m pip install grpcio-tools
 
 RUN git clone https://github.com/EunjuYang/DLStreamServing.git
 WORKDIR /DLStreamServing/model-repo
-RUN python3.6 -m grpc_tools.protoc -I. --python_out=./lib/ --grpc_python_out=./lib/ ./chunk.proto
+RUN python3.6 server.py

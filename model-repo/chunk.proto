@@ -10,6 +10,7 @@ service FileServer {
 message Chunk {
   bytes buffer = 1;
   string name = 2;
+  float loss = 3;
 }
 
 message Request {
