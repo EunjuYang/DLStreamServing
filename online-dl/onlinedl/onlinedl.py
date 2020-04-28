@@ -194,7 +194,6 @@ class OnlineDL:
         :param repo_addr:  model repository address
         """
 
-        # TODO - changha check
         self.model_manager = ModelManager(repo_addr, model_name)
         model_path = "/tmp/%s_init" % model_name
         self.model_manager.download_model(model_path)
