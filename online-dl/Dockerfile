@@ -44,7 +44,7 @@ RUN python3.6 -m pip install kafka
 
 RUN git clone https://github.com/EunjuYang/DLStreamServing.git
 WORKDIR /DLStreamServing/onlined-dl
-ENV PYTHONPATH=/DLStreamServing/stream_dl_api
+ENV PYTHONPATH=/DLStreamServing
 
 ENV MODEL_NAME=MODEL_NAME
 ENV ONLINE_METHOD=ONLINE_METHOD
