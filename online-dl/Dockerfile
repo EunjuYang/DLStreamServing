@@ -22,6 +22,8 @@ ARG IS_ADAPTIVE=False
 # for model repo
 ARG MODEL_REPO_ADDR
 
+ARG USERNAME
+ARG PASSWORD
 
 RUN apt-get update
 RUN apt-get install -y software-properties-common
@@ -34,7 +36,9 @@ RUN apt-get install -y git
 RUN python3.6 -m pip install pip --upgrade
 RUN python3.6 -m pip install wheel
 
-RUN git clone https://github.com/EunjuYang/DLStreamServing.git
+#RUN git clone https://github.com/EunjuYang/DLStreamServing.git
+RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
+RUN git checkout feature-model-repo
 WORKDIR /DLStreamServing/onlined-dl
 ENV PYTHONPATH=/DLStreamServing/stream_dl_api
 
