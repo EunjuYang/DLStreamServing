@@ -2,7 +2,7 @@ import os
 from concurrent import futures
 import grpc
 import time
-from modelrepo import chunk_pb2, chunk_pb2_grpc
+from modelrepo import chunk_pb2_grpc, chunk_pb2
 from modelrepo.model import Manager
 
 CHUNK_SIZE = 1024 * 1024  # 1MB
