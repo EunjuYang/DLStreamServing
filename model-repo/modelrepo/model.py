@@ -14,6 +14,9 @@ class Model:
         self.num_push = 0
         self.last_update = time.time()
 
+        # TODO
+        self.loss = []
+
     def __str__(self):
         return self.model_name
 

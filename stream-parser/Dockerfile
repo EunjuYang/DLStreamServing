@@ -20,8 +20,7 @@ RUN python3.6 -m pip install pip --upgrade
 RUN python3.6 -m pip install wheel
 RUN pip3 install confluent-kafka
 
-#RUN git clone https://github.com/EunjuYang/DLStreamServing.git
-RUN git clone https://gist.github.com/EunjuYang/64d3eb4f79ef1e593390b87270c3c6ac DLStreamServing/stream-parser
+RUN git clone https://github.com/EunjuYang/DLStreamServing.git
 WORKDIR /DLStreamServing/stream-parser
 ENV BOOTSTRAP_SERVERS=Bootstrap_Servers
 ENV LOOK_BACK_WIN_SIZE=Loop_Back_Win_Size
