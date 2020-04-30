@@ -11,6 +11,7 @@ CHUNK_SIZE = 1024 * 1024  # 1MB
 def get_file_chunks(filename, model_name=None):
 
     with open(filename, 'rb') as f:
+        yield chunk_pb2.Chunk(name=model_name)
         while True:
             piece = f.read(CHUNK_SIZE);
             if len(piece) == 0:
@@ -36,15 +37,6 @@ class Client:
     def __init__(self, address):
         channel = grpc.insecure_channel(address)
         self.stub = chunk_pb2_grpc.FileServerStub(channel)
-
-    def upload(self, in_file_name, target_name=None):
-        chunks_generator = get_file_chunks(in_file_name, target_name)
-        response = self.stub.upload(chunks_generator)
-        assert response.length == os.path.getsize(in_file_name)
-
-    def download(self, target_name, out_file_name):
-        response = self.stub.download(chunk_pb2.Request(name=target_name))
-        save_chunks_to_file(response, out_file_name)
 
     def upload_model(self, file_path, model_name):
         """
@@ -89,14 +81,6 @@ class ModelServer(chunk_pb2_grpc.FileServerServicer):
                 super(Servicer, self).__init__()
                 self.manager = manager
 
-            def upload(self, request_iterator, context):
-                filename = save_chunks_to_file(request_iterator)
-                return chunk_pb2.Reply(length=os.path.getsize(filename))
-
-            def download(self, request, context):
-                if request.name:
-                    return get_file_chunks(request.name)
-
             def upload_model(self, request_iterator, context):
                 filename = self._save_file(request_iterator)
                 return chunk_pb2.Reply(length=os.path.getsize(filename))
@@ -108,26 +92,16 @@ class ModelServer(chunk_pb2_grpc.FileServerServicer):
                     return chunk_pb2.Reply(None)
                 return get_file_chunks(model.model_file, model_name)
 
-
             def _save_file(self, chunks):
 
                 chunk = next(chunks)
                 if chunk.name is not u'':
                     model_name = chunk.name
+                else:
+                    return None
 
-                model = self.manager.get(model_name)
-                if model is None:
-                    model = self.manager.push_with_create(model_name)
-
-                filename = model.model_file
-
-                with open(filename, 'wb') as f:
-                    f.write(chunk.buffer)
-                    for chunk in chunks:
-                        f.write(chunk.buffer)
-                    model.update_push()
-
-                return filename
+                file_path = self.manager.update_model(model_name=model_name, chunks=chunks)
+                return file_path
 
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=max_workers))
         self.manager = Manager(dir_prefix=repo_path)
