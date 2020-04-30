@@ -38,8 +38,8 @@ RUN python3.6 -m pip install wheel
 
 #RUN git clone https://github.com/EunjuYang/DLStreamServing.git
 RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
-RUN git checkout feature-model-repo
 WORKDIR /DLStreamServing/onlined-dl
+RUN git checkout feature-model-repo
 ENV PYTHONPATH=/DLStreamServing/stream_dl_api
 
 ENV MODEL_NAME=MODEL_NAME
