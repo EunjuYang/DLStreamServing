@@ -1,4 +1,7 @@
 FROM ubuntu:16.04
+ARG USERNAME
+ARG PASSWORD
+
 RUN apt-get update
 RUN apt-get install -y software-properties-common
 RUN add-apt-repository -y ppa:fkrull/deadsnakes
@@ -12,6 +15,7 @@ RUN python3.6 -m pip install wheel
 RUN sudo python3.6 -m pip install grpcio
 RUN python3.6 -m pip install grpcio-tools
 
-RUN git clone https://github.com/EunjuYang/DLStreamServing.git
+RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
 WORKDIR /DLStreamServing/model-repo
-RUN python3.6 server.py
+RUN git checkout feature-model-repo
+ENTRYPOINT ["python3.6" ,"server.py"]

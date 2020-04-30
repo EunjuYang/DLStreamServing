@@ -22,8 +22,13 @@ ARG IS_ADAPTIVE=False
 # for model repo
 ARG MODEL_REPO_ADDR
 
+
+ARG USERNAME
+ARG PASSWORD
+
 RUN sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' /etc/apt/sources.list \
     sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' /etc/apt/sources.list.d/proposed.list
+
 
 RUN apt-get update
 RUN apt-get install -y software-properties-common
@@ -42,9 +47,12 @@ RUN python3.6 -m pip install scikit-learn
 RUN python3.6 -m pip install confluent-kafka
 RUN python3.6 -m pip install kafka
 
-RUN git clone https://github.com/EunjuYang/DLStreamServing.git
+#RUN git clone https://github.com/EunjuYang/DLStreamServing.git
+RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
 WORKDIR /DLStreamServing/onlined-dl
+RUN git checkout feature-model-repo
 ENV PYTHONPATH=/DLStreamServing
+
 
 ENV MODEL_NAME=MODEL_NAME
 ENV ONLINE_METHOD=ONLINE_METHOD

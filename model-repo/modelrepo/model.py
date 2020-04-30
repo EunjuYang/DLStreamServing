@@ -20,7 +20,7 @@ class Model:
     def __str__(self):
         return self.model_name
 
-    def update_push(self):
+    def flag_update(self):
         self.num_push += 1
         self.last_update = time.strftime('%c', time.localtime(time.time()))
 
@@ -34,19 +34,16 @@ class Manager:
         self.model_table = {}
         self.dir_prefix = dir_prefix
 
-    def push(self, model):
-
-        if str(model) in self.model_table.keys():
-            print("[Error] duplicate model is already saved in the repository")
-            return
-
-        self.model_table[str(model)] = model
-
-    def push_with_create(self, model_name):
+    def create_new_model(self, model_name):
+        """
+        Create a new model
+        :param model_name: model name
+        :return: model instance
+        """
 
         if model_name in self.model_table.keys():
             print("[Error] duplicate model is already saved in the repository")
-            return
+            return None
 
         model_file = self.dir_prefix + model_name + ".h5"
         model = Model(model_name=model_name,
@@ -57,7 +54,24 @@ class Manager:
 
     def get(self, model_name):
 
-        if model_name in self.model_table.keys():
-            return self.model_table[model_name]
-        return None
+        if not (model_name in self.model_table.keys()):
+            return None
+        return self.model_table[model_name]
+
+    def update_model(self, model_name, chunks):
+
+        model = self.get(model_name)
+        if model is None:
+            model = self.create_new_model(model_name)
+        if model is None:
+            return None
+
+        file_path = model.model_file
+        with open(file_path, 'wb') as f:
+            for chunk in chunks:
+                f.write(chunk.buffer)
+
+            model.flag_update()
+
+        return file_path
 
