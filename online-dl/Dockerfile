@@ -21,13 +21,13 @@ ARG IS_ADAPTIVE=False
 
 # for model repo
 ARG MODEL_REPO_ADDR
-
-
 ARG USERNAME
 ARG PASSWORD
 
-RUN sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' /etc/apt/sources.list \
-    sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' /etc/apt/sources.list.d/proposed.list
+
+RUN sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' /etc/apt/sources.list
+
+
 
 
 RUN apt-get update
@@ -41,10 +41,10 @@ RUN apt-get install -y git
 RUN python3.6 -m pip install pip --upgrade
 RUN python3.6 -m pip install wheel
 RUN python3.6 -m pip install setuptools --upgrade
-RUN python3.6 -m pip install tensorflow==2.1.0
+RUN python3.6 -m pip install tensorflow==2.1.0 -i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com
 RUN python3.6 -m pip install quadprog
 RUN python3.6 -m pip install scikit-learn
-RUN python3.6 -m pip install confluent-kafka
+RUN python3.6 -m pip install confluent-kafka -i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com
 RUN python3.6 -m pip install kafka
 
 #RUN git clone https://github.com/EunjuYang/DLStreamServing.git
