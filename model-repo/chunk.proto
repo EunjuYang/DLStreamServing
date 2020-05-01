@@ -1,8 +1,6 @@
 syntax = "proto3";
 
 service FileServer {
-  rpc upload(stream Chunk) returns (Reply) {}
-  rpc download(Request) returns (stream Chunk) {}
   rpc upload_model(stream Chunk) returns (Reply) {}
   rpc download_model(Request) returns (stream Chunk) {}
 }
