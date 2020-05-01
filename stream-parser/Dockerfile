@@ -30,3 +30,4 @@ ENV DST=Dst
 ENV LOOK_FORWARD_STEP=Look_Forward_Step
 ENV LOOK_FORWARD_WIN_SIZE=Look_Forward_Win_Size
 ENV IS_ONLINE_TRAIN=Is_Online_Train
+ENTRYPOINT ["python3.6" ,"stream-parser.py"]
