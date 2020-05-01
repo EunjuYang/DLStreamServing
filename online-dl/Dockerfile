@@ -50,7 +50,6 @@ RUN python3.6 -m pip install kafka
 #RUN git clone https://github.com/EunjuYang/DLStreamServing.git
 RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
 WORKDIR /DLStreamServing/onlined-dl
-RUN git checkout feature-model-repo
 ENV PYTHONPATH=/DLStreamServing
 
 
@@ -71,4 +70,4 @@ ENV DTYPE=DTYPE
 ENV IS_ADAPTIVE=IS_ADAPTIVE
 
 ENV MODEL_REPO_ADDR=MODEL_REPO_ADDR
-
+ENTRYPOINT ["python3.6" ,"online_trainer.py"]

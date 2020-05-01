@@ -17,5 +17,4 @@ RUN python3.6 -m pip install grpcio-tools
 
 RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
 WORKDIR /DLStreamServing/model-repo
-RUN git checkout feature-model-repo
 ENTRYPOINT ["python3.6" ,"server.py"]
