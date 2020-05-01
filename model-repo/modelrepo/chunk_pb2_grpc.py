@@ -13,16 +13,6 @@ class FileServerStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.upload = channel.stream_unary(
-                '/FileServer/upload',
-                request_serializer=chunk__pb2.Chunk.SerializeToString,
-                response_deserializer=chunk__pb2.Reply.FromString,
-                )
-        self.download = channel.unary_stream(
-                '/FileServer/download',
-                request_serializer=chunk__pb2.Request.SerializeToString,
-                response_deserializer=chunk__pb2.Chunk.FromString,
-                )
         self.upload_model = channel.stream_unary(
                 '/FileServer/upload_model',
                 request_serializer=chunk__pb2.Chunk.SerializeToString,
@@ -37,18 +27,6 @@ class FileServerStub(object):
 
 class FileServerServicer(object):
     """Missing associated documentation comment in .proto file"""
-
-    def upload(self, request_iterator, context):
-        """Missing associated documentation comment in .proto file"""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def download(self, request, context):
-        """Missing associated documentation comment in .proto file"""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
 
     def upload_model(self, request_iterator, context):
         """Missing associated documentation comment in .proto file"""
@@ -65,16 +43,6 @@ class FileServerServicer(object):
 
 def add_FileServerServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'upload': grpc.stream_unary_rpc_method_handler(
-                    servicer.upload,
-                    request_deserializer=chunk__pb2.Chunk.FromString,
-                    response_serializer=chunk__pb2.Reply.SerializeToString,
-            ),
-            'download': grpc.unary_stream_rpc_method_handler(
-                    servicer.download,
-                    request_deserializer=chunk__pb2.Request.FromString,
-                    response_serializer=chunk__pb2.Chunk.SerializeToString,
-            ),
             'upload_model': grpc.stream_unary_rpc_method_handler(
                     servicer.upload_model,
                     request_deserializer=chunk__pb2.Chunk.FromString,
@@ -94,38 +62,6 @@ def add_FileServerServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class FileServer(object):
     """Missing associated documentation comment in .proto file"""
-
-    @staticmethod
-    def upload(request_iterator,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.stream_unary(request_iterator, target, '/FileServer/upload',
-            chunk__pb2.Chunk.SerializeToString,
-            chunk__pb2.Reply.FromString,
-            options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def download(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/FileServer/download',
-            chunk__pb2.Request.SerializeToString,
-            chunk__pb2.Chunk.FromString,
-            options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def upload_model(request_iterator,
