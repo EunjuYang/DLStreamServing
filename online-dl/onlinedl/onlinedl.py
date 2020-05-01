@@ -195,14 +195,14 @@ class OnlineDL:
         """
 
         self.model_manager = ModelManager(repo_addr, model_name)
-        model_path = "/tmp/%s_init" % model_name
-        self.model_manager.download_model(model_path)
+        self.model_path = "/tmp/%s_init" % model_name
+        self.model_manager.download_model(self.model_path)
 
-        self.model_filename = model_path.split('/')[-1]
+        self.model_filename = self.model_path.split('/')[-1]
         self.online_method = online_method
         self.framework = framework
 
-        model = tf.keras.models.load_model(model_path)
+        model = tf.keras.models.load_model(self.model_path)
 
         if self.online_method == 'inc':
             if self.framework == 'keras':
@@ -242,9 +242,9 @@ class OnlineDL:
                 raise OnlineDLError
 
     def save(self):
-        self.model.save(self.model_filename + '/model.h5')
-        # TODO changha check
-        self.model_manager.upload_model(self.model_filename + '/model.h5')
+        self.model.save(self.model_path)
+        # TODO changha - update loss
+        self.model_manager.upload_model(self.model_filename,loss=0.0)
 
     @staticmethod
     def _check_attribute_error(target, arg_name):

@@ -49,7 +49,7 @@ RUN python3.6 -m pip install kafka
 
 #RUN git clone https://github.com/EunjuYang/DLStreamServing.git
 RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
-WORKDIR /DLStreamServing/onlined-dl
+WORKDIR /DLStreamServing/online-dl
 ENV PYTHONPATH=/DLStreamServing
 
 

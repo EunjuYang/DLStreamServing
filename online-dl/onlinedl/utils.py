@@ -37,12 +37,18 @@ class ModelManager:
         return True
 
     def _save_chunks_to_file(self, chunks, filename=None):
+
+        chunk = next(chunks)
+        print("# File is saved in %s" % filename)
+
         with open(filename, 'wb') as f:
+            f.write(chunk.buffer)
             for chunk in chunks:
                 f.write(chunk.buffer)
+
         return filename
 
-    def _get_file_chunks(self, filename, model_name=None, loss):
+    def _get_file_chunks(self, filename, model_name, loss):
 
         with open(filename, 'rb') as f:
             yield chunk_pb2.Chunk(name=model_name)
