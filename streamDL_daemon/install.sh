@@ -11,5 +11,5 @@ sudo systemctl daemon-reload
 sudo systemctl enable streamDL.service
 sudo systemctl start streamDL.service
 sudo systemctl status streamDL.service
-
 kubectl create -f ./dlstream-namespace.yaml
+
