@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: onlinedl-01
+  namespace: dlstream
+spec:
+  selector:
+    matchLabels:
+      app: onlinedl-01
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: onlinedl-01
+    spec:
+      containers:
+      - name: onlinedl-01
+        image: yejyang/onlinedl:v01
+        env:
+        - name: MODEL_NAME
+          value: "hello_model"
+        - name: ONLINE_METHOD
+          value: "cont"
+        - name: FRAMEWORK
+          value: "keras"
+        - name: SAVEWEIGHT
+          value: "false"
+        - name: MEM_METHOD
+          value: "cossim"
+        - name: NUM_AMI
+          value: "1"
+        - name: EPISODIC_MEM_SIZE
+          value: "100"
+        - name: IS_SCHEDULE
+          value: "true"
+        - name: MODL_REPO_ADDR
+          value: "modelrepo.dlstream:8888"
+        - name: CEP_ID
+          value: "cep_test"
+        - name: KAFKA_BK
+          value: "{KAFKA_IP}"
+        - name: STREAM_BK
+          value: "143.248.146.115"
+        - name: BATCH_SIZE
+          value: "32"
+        - name: DTYPE
+          value: "float32"
+        - name: IS_ADPTIVE
+          value: "false"
+
+
+
+
