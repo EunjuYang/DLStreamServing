@@ -56,3 +56,46 @@ gRPC로 interface API를 제공합니다. 자세한 interface는 [streamDL.proto
     rpc get_stream_list(null) returns (KafkaTopics) {}
 ```
 
+
+
+#### Deploy with onlineDL
+
+
+
+**(COMMON) Deploy witohout onlineDL**
+
+* 모델 파일 업로드
+* [string] model_name
+
+- [bool] is_adaptive
+
+- [list] amis
+
+- input format
+
+  ```
+  int32 look_back_win_size
+  int32 input_shift_step 
+  ```
+
+  -------------------------------------
+
+  **Online DL 용 parameter**
+
+- input format
+
+  ```bash
+  (online training) int32 look_forward_step 
+  (online training) int32 look_forward_win_size 
+  ```
+
+  [선택] online_method (cont / inc)
+
+- batch_size
+
+- [선택] (only for cont) memory_method (ring buffer / cossim)
+
+- [int] (only for cont) episodic_mem_size
+
+- [bool] (onlyb for cont) is_schedule
+
