@@ -10,7 +10,7 @@ _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 
 
-class streamDL():
+class Broker():
     """
     This class work as streamDL_daemon
     This is only for daemon (running and launching server)
