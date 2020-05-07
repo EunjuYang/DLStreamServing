@@ -4,13 +4,14 @@ It only contains prototype codes.
 """
 import os
 
-from onlinedl.onlinedl import *
+from inferencedl.inferencedl import *
 from stream_dl_api.dlcep import *
 
 if __name__ == '__main__':
 
     model_name = os.environ['MODEL_NAME']
     model_repo_addr = os.environ['MODEL_REPO_ADDR']
+    mongo_result_addr = os.environ['RESULT_ADDR']
 
     cep_id = os.environ['CEP_ID']
     kafka_bk = os.environ['KAFKA_BK']
@@ -21,7 +22,8 @@ if __name__ == '__main__':
 
     # Not yet determine to make InferenceDL
     inferencer = InferenceDL(model_name=model_name,
-                             repo_addr=model_repo_addr)
+                             repo_addr=model_repo_addr,
+                             result_addr=mongo_result_addr)
     strstub = StreamDLStub(kafka_bk=kafka_bk,
                            cep_id=cep_id,
                            stream_bk=stream_bk,
