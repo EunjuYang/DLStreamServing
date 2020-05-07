@@ -37,13 +37,14 @@ message ModelList{
 
 message Model{
     string name = 1;
-    repeated string amis = 2;
+    AMIList amis = 2;
     bytes buffer = 3;
     InputFmt input_fmt = 4;
     bool is_online_train = 5;
     string update_time = 6;
     string create_time = 7;
     string UUID = 8;
+    onlineParam online_param = 9;
 }
 
 message ModelInfo{
@@ -54,6 +55,16 @@ message ModelInfo{
 
 message AMIList{
     repeated string ami_id = 1;
+}
+
+message onlineParam{
+
+    string online_method = 1;
+    int32 batch_size  = 2;
+    string memory_method = 3;
+    int32 episodic_mem_size = 4;
+    bool is_schedule = 5;
+
 }
 
 message InputFmt{
