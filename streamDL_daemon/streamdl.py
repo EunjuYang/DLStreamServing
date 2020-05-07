@@ -1,52 +1,32 @@
-from concurrent import futures
-from streamDLbroker import streamDLbroker
-import streamDL_pb2_grpc
-import time
-import logging
-import grpc
-import signal
+from streamDL_daemon import streamDL_pb2
 
-_ONE_DAY_IN_SECONDS = 60 * 60 * 24
+class streamDL:
 
+    def __init__(self, name, input_fmt, is_online_train, update_time, create_time, UUID, online_param, amis):
 
+        self.name = name
+        self.input_fmt= input_fmt
+        self.is_online_train = is_online_train
+        self.update_time = update_time
+        self.create_time = create_time
+        self.UUID = UUID
+        self.online_param = online_param
+        self.sp_name_list = []
+        self.amis = amis
 
-class streamDL():
-    """
-    This class work as streamDL_daemon
-    This is only for daemon (running and launching server)
-    Actual action of streamDL broker is defined in the `streamDLbroker` class
-    """
+    def update_sp_info(self, sp_name_list):
 
-    def __init__(self, log_file=None):
-        logging.basicConfig(level=logging.INFO, format='%(message)s')
-        self.logger = logging.getLogger("streamDLBroker")
-        self.log_file = log_file
+        self.sp_name_list = sp_name_list
 
-        if log_file:
-            self.log_handler = logging.FileHandler(self.log_file)
-            self.logger.addHandler(self.log_handler)
+    def get_model_instance(self):
 
-        self.__stop = False
+        ami_list = streamDL_pb2.AMIList()
+        for ami in self.amis:
+            ami_list.ami_id.append(ami)
 
-        signal.signal(signal.SIGINT, self.stop)
-        signal.signal(signal.SIGTERM, self.stop)
-        self.streamDLbroker = streamDLbroker()
-
-    def stop(self, signum, frame):
-        self.__stop = True
-        self.logger.info("Receive Signal {0}".format(signum))
-        self.logger.info("Stop streamDLBroker")
-
-    def run(self):
-
-        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        streamDL_pb2_grpc.add_streamDLbrokerServicer_to_server(self.streamDLbroker, self.server)
-        self.server.add_insecure_port('[::]:50091')
-        self.server.start()
-        try:
-            while True:
-                time.sleep(_ONE_DAY_IN_SECONDS)
-        except KeyboardInterrupt:
-            self.server.stop(0)
+        return streamDL_pb2.Model(name=self.name,
+                               amis=ami_list,
+                               is_online_train=self.is_online_train,
+                               create_time=self.create_time)
 
 

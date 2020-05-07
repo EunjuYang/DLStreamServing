@@ -2,7 +2,7 @@ import os
 import sys
 
 import argparse
-from streamdl import streamDL
+from broker import Broker
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -41,7 +41,7 @@ if __name__ == '__main__':
             with open(args.pid, "w") as pid_file:
                 pid_file.write(str(os.getpid()))
 
-            streamDLBroker = streamDL(args.log)
+            streamDLBroker = Broker(args.log)
             exit_code = streamDLBroker.run()
             exit(exit_code)
 

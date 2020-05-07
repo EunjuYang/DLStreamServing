@@ -1,0 +1,158 @@
+#!/usr/bin/env python
+from streamDL_pyclient import streamDL_pb2, streamDL_pb2_grpc
+from argparse import RawTextHelpFormatter
+import argparse
+import grpc
+import time
+from time import strftime
+from datetime import datetime
+
+CHUNK_SIZE = 1024 * 1024 # 1 MB
+
+class Client:
+
+    def __init__(self, address):
+
+        channel = grpc.insecure_channel(address)
+        self.stub = streamDL_pb2_grpc.streamDLbrokerStub(channel)
+
+    def set_deploy_model(self, model_file, model_name, ami_list, input_format, is_online_train, online_param):
+
+        deploy_generator = self._deploy_generator(model_file, model_name, ami_list, input_format, is_online_train, online_param)
+        response = self.stub.set_deploy_model(deploy_generator)
+        print(response.message)
+        return
+
+    def get_deployed_model(self):
+
+        return self.stub.get_deployed_model(streamDL_pb2.null())
+
+
+    def get_ami_list(self):
+
+        ami_list = self.stub.get_ami_list(streamDL_pb2.null())
+        return ami_list.ami_id
+
+    def _deploy_generator(self, model_file, model_name, ami_list, input_format, is_online_train, online_param):
+
+        input_fmt = streamDL_pb2.InputFmt(
+            look_back_win_size=input_format['look_back_win_size'],
+            input_shift_step=input_format['input_shift_step'],
+            look_forward_step=input_format['look_forward_step'],
+            look_forward_win_size=input_format['look_forward_win_size']
+        )
+        online_parameter = streamDL_pb2.onlineParam(
+            online_method=online_param['online_method'],
+            batch_size=online_param['batch_size'],
+            memory_method=online_param['memory_method'],
+            episodic_mem_size=online_param['episodic_mem_size'],
+            is_schedule=online_param['is_schedule']
+        )
+        amis = streamDL_pb2.AMIList()
+        for ami in ami_list:
+            amis.ami_id.append(ami)
+
+        with open(model_file, 'rb') as f:
+
+            while True:
+                piece = f.read(CHUNK_SIZE)
+                if len(piece) == 0:
+                    return
+
+                yield streamDL_pb2.Model(name=model_name,
+                                           amis=amis,
+                                           buffer=piece,
+                                           is_online_train=is_online_train,
+                                           input_fmt=input_fmt,
+                                           update_time=str(time.time()),
+                                           create_time=str(time.time()),
+                                           UUID=model_name,
+                                           online_param=online_parameter)
+
+
+def print_stream_list(stream_list):
+
+    print('+--------------+-------------------------------------+')
+    print('|  Name Space  |             Data Name               |')
+    print('+--------------+-------------------------------------+')
+
+    for stream in stream_list:
+        stream_name = stream.split(".")
+        print('|%s|%s|' %(stream_name[0].center(14), stream_name[1].center(37)))
+    print('+--------------+-------------------------------------+')
+
+def print_model_list(model_list):
+
+    print('+--------------+-------------------------------------+-------+-----------------+')
+    print('|     Name     |             Streams                 | Train |   Deployed At   |')
+    print('+--------------+-------------------------------------+-------+-----------------+')
+
+    for model in model_list.model:
+        stream_list = (','.join(model.amis.ami_id))
+        deployed_time = datetime.fromtimestamp(float(model.create_time)).strftime('%Y-%m-%d %H:%M')
+        print('|%s|%s|%s|%s|' %(model.name.center(14), stream_list.center(37), str(model.is_online_train).center(7), str(deployed_time).center(17)))
+    print('+--------------+-------------------------------------+-------+-----------------+')
+
+
+if __name__ == '__main__':
+    client = Client('127.0.0.1:50091')
+
+    parser = argparse.ArgumentParser(description="* streamDL-serving * \n\n"
+                                                 " This is client program for streamDL serving platform. \n"
+                                                 " You can deploy stream DL service with this client program.", formatter_class=RawTextHelpFormatter)
+    parser.add_argument('mode')
+    parser.add_argument('--streams', action='store_true', required=False, default=False)
+    parser.add_argument('--models', action='store_true', required=False, default=False)
+
+    # Deployment argument
+    parser.add_argument('--model_file', required=False)
+    parser.add_argument('--model_name', required=False)
+    parser.add_argument('--is_adaptive', type=bool, required=False, default=True)
+    parser.add_argument('--is_online_train', type=bool, required=False, default=True)
+    parser.add_argument('--amis', required=False)
+    parser.add_argument('--look_back_win_size', type=int, required=False)
+    parser.add_argument('--input_shift_step', type=int, required=False)
+    parser.add_argument('--look_forward_step', type=int, required=False)
+    parser.add_argument('--look_forward_win_size', type=int, required=False)
+    parser.add_argument('--online_method', required=False)
+    parser.add_argument('--batch_size', type=int, required=False)
+    parser.add_argument('--memory_method', required=False)
+    parser.add_argument('--episodic_mem_size', type=int, required=False)
+    parser.add_argument('--is_schedule', type=bool, required=False)
+    args = parser.parse_args()
+    mode = ('deploy', 'delete', 'get')
+
+    if args.mode not in mode:
+        print("* streamDL-serving * \n\n Usage Error. \n Please use help option to get information with -h, --help")
+        exit()
+
+    # deploy mode
+    if args.mode == 'deploy':
+        model_file = args.model_file
+        model_name = args.model_name
+        ami_list = args.amis.split(',')
+        is_online_train = args.is_online_train
+        input_format = {}
+        online_param = {}
+        input_format['look_back_win_size'] = args.look_back_win_size
+        input_format['input_shift_step'] = args.input_shift_step
+        input_format['look_forward_step'] = args.look_forward_step
+        input_format['look_forward_win_size'] = args.look_forward_win_size
+        online_param['online_method'] = args.online_method
+        online_param['batch_size'] = args.batch_size
+        online_param['memory_method'] = args.memory_method
+        online_param['episodic_mem_size'] = args.episodic_mem_size
+        online_param['is_schedule'] = args.is_schedule
+
+        client.set_deploy_model(model_file, model_name, ami_list, input_format, is_online_train, online_param)
+
+    if args.mode == 'get':
+        if args.streams:
+            stream_list = client.get_ami_list()
+            print_stream_list(stream_list)
+        if args.models:
+            model_list = client.get_deployed_model()
+            print_model_list(model_list)
+
+
+
