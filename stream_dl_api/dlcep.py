@@ -19,6 +19,7 @@ class StreamDLStub():
                  stream_bk,
                  batch_size,
                  dtype,
+                 is_train=True,
                  adaptive_batch_mode=True):
         """
 
@@ -47,10 +48,13 @@ class StreamDLStub():
 
         self.consumer.start()
         self.adaptive_batch = adaptive_batch_mode
-        if adaptive_batch_mode:
-            self.batch_train_generator = self._adaptive_batch_train_generator
+        if is_train:
+            if adaptive_batch_mode:
+                self.batch_train_generator = self._adaptive_batch_train_generator
+            else:
+                self.batch_train_generator = self._batch_train_generator
         else:
-            self.batch_train_generator = self._batch_train_generator
+            self.batch_generator = self._adaptive_batch_inference_generator
 
     def _get_stream_fmt_from_broker(self):
         # grpc call
@@ -70,6 +74,26 @@ class StreamDLStub():
         self.lb_size = lb_size
         self.is_train = is_train
         self.lf_size = lf_size
+
+    def _adaptive_batch_inference_generator(self):
+        while True:
+            if len(self.buffer) == 0:
+                time.sleep(0.1)
+                continue
+            elif len(self.buffer) < self.batch_size:
+                bs = len(self.buffer)
+            else:
+                bs = self.batch_size
+            x_shape = (bs, self.lb_size)
+            x_batch = np.zeros(shape=x_shape, dtype=self.dtype)
+            id_batch = np.zeros(shape=(bs, 1), dtype=np.int32)
+
+            for i in range(bs):
+                x_batch[i] = self.buffer[0][:self.lb_size]
+                id_batch[i] = self.buffer[0][-1]
+                self.buffer.pop(0)
+
+            yield (bs, x_batch, id_batch)
 
     def _adaptive_batch_train_generator(self):
 

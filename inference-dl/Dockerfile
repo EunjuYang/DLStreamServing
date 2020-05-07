@@ -22,6 +22,7 @@ RUN python3.6 -m pip install setuptools --upgrade
 RUN python3.6 -m pip install tensorflow==2.1.0 -i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com
 RUN python3.6 -m pip install confluent-kafka -i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com
 RUN python3.6 -m pip install kafka
+RUN python3.6 -m pip install pymongo
 
 RUN git clone https://$USERNAME:$PASSWORD@github.com/iop851/DLStreamServing.git
 WORKDIR /DLStreamServing/inference-dl

@@ -16,7 +16,6 @@ if __name__ == '__main__':
     cep_id = os.environ['CEP_ID']
     kafka_bk = os.environ['KAFKA_BK']
     stream_bk = os.environ['STREAM_BK']
-    is_adaptive = bool(os.environ['IS_ADAPTIVE'])
     batch_size = int(os.environ['BATCH_SIZE'])
     _dtype = os.environ['DTYPE']
 
@@ -28,9 +27,10 @@ if __name__ == '__main__':
                            cep_id=cep_id,
                            stream_bk=stream_bk,
                            batch_size=batch_size,
-                           dtype=_dtype,
-                           adaptive_batch_mode=is_adaptive)
-    stream_generator = strstub.batch_train_generator()
+                           is_train=False,
+                           dtype=_dtype)
+    stream_generator = strstub.batch_generator()
     while True:
-        _, x_batch, y_batch, _ = next(stream_generator)
-        inferencer.consume(x_batch, y_batch)
+        # you need to add id information and parse it and submit it into mongodb
+        _, x_batch, id_batch = next(stream_generator)
+        inferencer.consume(x_batch, id_batch)
