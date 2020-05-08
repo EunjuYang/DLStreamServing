@@ -2,13 +2,28 @@
 ## Description
 Using Dockerfile, it continuously create data in mongodb, which will be read in Dashboard.   
 
-## Prerequisite
-First you need to run mongo docker image like below.
+## RUN EXAMPLE
+First you need to run mongo docker image like below. ($CONTAINER_NAME is a user-defined var)
 ```bash
-$ docker run -d --name mongo mongo:4.2
+$ docker run -d --name $CONTAINER_NAME mongo:4.2
+```   
+Then you need to run "docker build" to make generator-image.
+```bash
+$ docker build -t createdata:0.1 \
+    --build-arg USERNAME=$USERNAME \ 
+    --build-arg PASSWORD=$PASSWORD 
+    --build-arg NAME=$NAME .
 ```
-Check mongo image is running like below   
-Then you need to run "docker build" to create data.
+Finally, run "docker run" to create data.
 ```bash
-$ docker build -t createdata:0.1 
+$ docker run -d --link $CONTAINER_NAME:$CONTAINER_NAME createdata:0.1 
+```
+## MongoDB and Data Description
+Database: 'inference'   
+```bash
+Data: { 'amiid': 0 ~ 4, # an integer
+    'pred': [value 0, value 1, ..., value N], # list and N is varying
+    'true': [value 0, value 1, ..., value N], # list and N is varying
+    'timestamp': value # an integer from time.time()
+}
 ```
