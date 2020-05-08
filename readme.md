@@ -1,6 +1,7 @@
 # StreamDLServing Platform
 
-<img src=https://github.com/EunjuYang/DLStreamServing/tree/master/img/dlstreamServing_icon.png/>  StreamDLServing
+
+### <img src="https://github.com/EunjuYang/DLStreamServing/blob/master/img/dlstreamServing_icon.png" alt="drawing" width="30"/>   StreamDLServing 
 
 
 
@@ -14,7 +15,7 @@ Conceptual architecture is as follows.
 
 
 
-<img align="center" src="https://github.com/EunjuYang/DLStreamServing/tree/master/img/ dlstream_platform_overview.png"> 
+<img align="center" src="https://github.com/EunjuYang/DLStreamServing/blob/master/img/dlstream_platform_overview.png"> 
 
 
 
@@ -59,4 +60,3 @@ $ source preset.sh
 ### Install Platform
 
 Please run this installation process on master node of kubernetes cluster.
-
