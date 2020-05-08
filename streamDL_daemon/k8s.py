@@ -4,9 +4,12 @@ import json
 
 class k8s:
 
-    def __init__(self):
+    def __init__(self, mode="SYSDAEMON"):
 
-        self.config = config.load_kube_config()
+        if mode == "SYSDAEMON" or mode == "":
+            self.config = config.load_kube_config()
+        elif mode == "POD":
+            self.config = config.load_incluster_config()
         self.v1 = client.AppsV1Api()
         self.k8s_core = client.CoreV1Api()
 

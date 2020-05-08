@@ -3,7 +3,7 @@ Description=Stream DL Broker
 
 [Service]
 Type=forking
-ExecStart=/usr/bin/python3 /opt/streamDL/main.py --pid /var/run/streamDL.pid --log /var/log/streamDL/streamDL.log
+ExecStart=/usr/bin/python3 /opt/streamDL/streamDL_daemon/server.py --pid /var/run/streamDL.pid --log /var/log/streamDL/streamDL.log
 Restart=always
 PIDFile=/var/run/streamDL.pid
 WorkingDirectory=/opt/streamDL/

@@ -1,15 +1,21 @@
-#!/usr/bin/env bash
-export KAFKA_BK="143.248.146.115:9092,143.248.146.116:9092,143.248.146.117:9092"
-export STREAM_PREFIX="dlstream.ami"
-
-kubectl create -f ./dlstream-namespace.yaml
-kubectl create -f ./modelrepo-deployment.yaml
+#!/bin/bash
+#kubectl create -f ./dlstream-namespace.yaml
+#kubectl create -f ./modelrepo-deployment.yaml
 
 python -m grpc_tools.protoc -I./proto --python_out=. --grpc_python_out=. ./proto/streamDL.proto
 
+echo "* create /opt/streamDL/ ..."
 sudo mkdir -p /opt/streamDL /var/log/streamDL
-sudo cp *.py /opt/streamDL
+echo "* copy all files to /opt/streamDL/ ..."
+sudo cp -r ../ /opt/streamDL
 sudo cp streamDL.service /etc/systemd/system/
+echo "* Install dependency python package for root user"
+sudo su <<HERE
+echo "   ** Install kubernetes"
+pip install kubernetes
+echo "   ** Install pykafka"
+pip install pykafka
+HERE
 
 
 sudo systemctl daemon-reload

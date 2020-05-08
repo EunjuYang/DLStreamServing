@@ -11,13 +11,13 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
     dlCEPbroker
     """
 
-    def __init__(self):
+    def __init__(self, MODE="SYSDAEMON"):
         super(streamDLbroker, self).__init__()
 
         # KAFKA BROKER INFO
         self.KAFKA_BK = os.environ['KAFKA_BK']
         self.stream_prefix = os.environ['STREAM_PREFIX']
-        self.k8s_ = k8s()
+        self.k8s_ = k8s(MODE)
         self.kafka_client = KafkaClient(hosts=self.KAFKA_BK)
 
         self.ModelRepo = {}

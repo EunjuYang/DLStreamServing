@@ -20,5 +20,6 @@ RUN python3.6 -m pip install grpcio grpcio-tools
 RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
 WORKDIR /DLStreamServing/streamDL_daemon
 ENV PYTHONPATH=/DLStreamServing/:/DLStreamServing/online-dl
+ENV STREAMDL_MODE="POD"
 
 ENTRYPOINT ["python3.6" ,"server.py"]
