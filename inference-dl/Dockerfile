@@ -3,6 +3,13 @@ FROM ubuntu:16.04
 ARG MODEL_NAME
 ARG MODEL_REPO_ADDR
 ARG RESULT_REPO_ADDR
+
+ARG CEP_ID
+ARG KAFKA_BK
+ARG STREAM_BK
+ARG BATCH_SIZE
+ARG DTYPE
+
 ARG USERNAME
 ARG PASSWORD
 
@@ -22,6 +29,7 @@ RUN python3.6 -m pip install setuptools --upgrade
 RUN python3.6 -m pip install tensorflow==2.1.0 -i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com
 RUN python3.6 -m pip install confluent-kafka -i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com
 RUN python3.6 -m pip install kafka
+RUN python3.6 -m pip install pymongo
 
 RUN git clone https://$USERNAME:$PASSWORD@github.com/iop851/DLStreamServing.git
 WORKDIR /DLStreamServing/inference-dl
@@ -30,3 +38,11 @@ ENV PYTHONPATH=/DLStreamServing:/DLStreamServing/online-dl
 ENV MODEL_NAME=MODEL_NAME
 ENV MODEL_REPO_ADDR=MODEL_REPO_ADDR
 ENV RESULT_REPO_ADDR=RESULT_REPO_ADDR
+
+ENV CEP_ID=CEP_ID
+ENV KAFKA_BK=KAFKA_BK
+ENV STREAM_BK=STREAM_BK
+ENV BATCH_SIZE=BATCH_SIZE
+ENV DTYPE=DTYPE
+
+ENTRYPOINT ["python3.6" ,"online_serving.py"]
