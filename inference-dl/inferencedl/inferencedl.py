@@ -33,13 +33,13 @@ class InferenceDL:
 
     # Below consume-function implement feedforward and send results to database (mongodb)
     def consume(self, data, id):
-        post = {}
         data = data.reshape(self.batch_input_shape)
         result = self.model.predict(data, batch_size=data.shape[0])
         result = result.reshape((data.shape[0],))
         data = data[:,-1]
         # Do not use encode and decode
         for i in np.unique(id):
+            post = {}
             post['amiid'] = i
             post['pred'] = result[np.where(id==i)].tolist() # shape is (batch,)
             post['true'] = data[np.where(id==i)].tolist() # shape is (batch,)
