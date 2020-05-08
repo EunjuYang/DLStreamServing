@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streamdl-daemon
+  labels:
+    app: streamdl-daemon
+  namespace: dlstream
+spec:
+  selector:
+    matchLabels:
+      app: streamdl-daemon
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: streamdl-daemon
+    spec:
+      containers:
+        - name: streamdl-daemon
+          image: dlstream/streamdl_daemon:v01
+          ports:
+            - containerPort: 50091
+          env:
+            - name: KAFKA_BK
+              value: ${KAFKA_BK}
+            - name: STREAM_PREFIX
+              value: ${STREAM_PREFIX}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: streamdl-daemon
+  labels:
+    app: streamdl-daemon
+  namespace: dlstream
+spec:
+  ports:
+    - port: 50091
+      targetPort: 50091
+  selector:
+    app: streamdl-daemon

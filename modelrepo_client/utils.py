@@ -1,6 +1,6 @@
 import os
 import grpc
-from onlinedl import chunk_pb2, chunk_pb2_grpc
+from modelrepo_client import chunk_pb2, chunk_pb2_grpc
 
 CHUNK_SIZE = 1024 * 1024  # 1MB
 

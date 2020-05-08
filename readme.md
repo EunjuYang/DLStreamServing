@@ -1,73 +1,62 @@
 # StreamDLServing Platform
 
-This repository contains source code to support deep learning-based stream event processing. 
-It receives "registration" for a DL model as CEP-rule and its input specification.
+<img src=https://github.com/EunjuYang/DLStreamServing/tree/master/img/dlstreamServing_icon.png/>  StreamDLServing
 
 
-### Dependencies
 
-* python 3.6 >=
-* grpc
+StreamDLServing platform provides serving environment to deploy deep learning models processing stream data.
 
-For the stream cluster side  
-We recomend you to use conda to manage package dependencies.
+This platform can work with stream processing big-data platform, Apache Kafka.
+
+It supports trained model to be deployed supporting continual inference coming from kafka broker.
+
+Conceptual architecture is as follows.
 
 
-```bash
-$ pip install grpcio protobuf grpcio-tools
+
+<img align="center" src="https://github.com/EunjuYang/DLStreamServing/tree/master/img/ dlstream_platform_overview.png"> 
+
+
+
+## Pre-requisite
+
+### Install Kubernetes
+
+Our StreamDLServing splatform works on the kubernetes cluster. Firstly, build the kubernetes cluster on your environment. About building k8s cluster, please refers to [HERE](https://github.com/KAIST-NCL/Accelerator-K8S/wiki/How-to-make-a-k8s-cluster).
+
+
+
+## Installation
+
+### Setting system parameter
+
+Please clone your repository to ${StreamDL_Home}
+
+```
+$ git clone https://github.com/EunjuYang/DLStreamServing.git
 ```
 
-```bash
-$ pip install confluent-kafka
+Please edit `preset.sh` to satisfy your environment.
+
 ```
-```bash
-$ pip install pandas
-```
+#!/bin/bash
 
-### Our clusters
-UCluster is built as follows. 
-CEP cluster is coordinated by Kubernetes and all deep learning model for complex event processing is running with container.
-Stream cluster manages all stream-related routing function. Especially, stream input multiplexing for deep learning inferencing is conducted in stream cluster side.
-Stream cluster contains zookeeper & Kafka & Spark (not determined).
+export StreamDL_Home={Your StreamDL_Home DIR}
+export KAFKA_BK={Your Kafka Broker Endpoint, IP:PORTNUM}
+export STREAM_PREFIX={Your Kafka Topic Prefix to be used for StreamDL Serving}
+export PYTHONPATH=$StreamDL_Home
+export PATH=$PATH:$StreamDL_Home/streamDL_pyclient
 
-| Cluster           | CEP Cluster   | StreamCluster|
-| :----------------:|:------------: |:------------:|
-| Server Information| cep-node0     | stream-node0 |
-|                   | cep-node1     | stream-node1 |
-|                   |               | stream-node2 |
-
-### How to install
-
-
-#### DL-based CEP Service Daemon (streamDL daemon)
-
-Install this daemon in master node of CEP service cluster. It will communicate with client (Dashboard) and Stream daemon running on stream cluster.
-
-all program for dl-based CEP broker is written under `daemon` folder.
-Please install all dependencies. Update `install.sh` file, 
-especially don't forget to update the `python path` which includes `grpc`. The `python path` should be include interpreter version higher than 3.6.
-
-It should be installed on a master node of CEP cluster.
-
-```bash
-$ ./install.sh
 ```
 
-Running install shell script automatically set daemon process.
-For uninstall, please execute `uninstall.sh` shell script.
+Export the preset environment variables with the following command
 
-
-#### Stream Daemon (streamBroker daemon)
-
-all program for dl-based CEP broker is written under `daemon` folder.
-Please install all dependencies. Update `install.sh` file, 
-especially don't forget to update the `python path` which includes `grpc`.
-
-It should be installed on a master node of Stream Cluster
-
-```bash
-stream-node0$ ./install.sh
+```
+$ chmod +x preset.sh
+$ source preset.sh
 ```
 
-Running install shell script automatically set daemon process.
-For uninstall, please execute `uninstall.sh` shell script.
+### Install Platform
+
+Please run this installation process on master node of kubernetes cluster.
+
