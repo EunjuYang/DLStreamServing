@@ -2,7 +2,8 @@ FROM ubuntu:16.04
 
 ARG USERNAME
 ARG PASSWORD
-ARG KAKAO='-i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com'
+ARG KAKAO="-i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com"
+ARG NAME
 
 RUN sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' /etc/apt/sources.list
 
@@ -17,8 +18,12 @@ RUN python3.6 -m pip install pip --upgrade $KAKAO
 RUN python3.6 -m pip install wheel $KAKAO
 RUN python3.6 -m pip install setuptools --upgrade $KAKAO
 RUN python3.6 -m pip install pymongo $KAKAO
-
+RUN python3.6 -m pip install numpy $KAKAO
 
 
 RUN git clone https://$USERNAME:$PASSWORD@github.com/iop851/DLStreamServing.git
 WORKDIR /DLStreamServing/testbench/create-data-mongo/
+
+ENV NAME=NAME
+
+ENTRYPOINT ["python3.6" ,"run.py"]
