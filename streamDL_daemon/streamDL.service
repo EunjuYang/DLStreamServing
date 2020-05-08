@@ -3,10 +3,11 @@ Description=Stream DL Broker
 
 [Service]
 Type=forking
-ExecStart=/usr/bin/python3 /opt/streamDL/streamDL_daemon/server.py --pid /var/run/streamDL.pid --log /var/log/streamDL/streamDL.log
+WorkingDirectory=/opt/streamDL/
+EnvironmentFile=/opt/streamDL/environment.conf
+ExecStart=/usr/bin/python /opt/streamDL/streamDL_daemon/main.py --pid /var/run/streamDL.pid --log /var/log/streamDL/streamDL.log
 Restart=always
 PIDFile=/var/run/streamDL.pid
-WorkingDirectory=/opt/streamDL/
-ExecStop=/bin/kill $MAINPID
+ExecStop=/bin/kill -9 $MAINPID
 
 [Install]

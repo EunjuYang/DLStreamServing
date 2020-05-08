@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import os
 import sys
 
@@ -5,6 +7,7 @@ import argparse
 from broker import Broker
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--pid", help="pid filename", required=True)
     parser.add_argument("--log", help="log filename", default=None)

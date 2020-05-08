@@ -1,4 +1,5 @@
-from streamDL_daemon import streamDL_pb2
+#!/usr/bin/python
+import streamDL_pb2
 
 class streamDL:
 
