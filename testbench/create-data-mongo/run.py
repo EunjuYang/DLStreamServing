@@ -7,7 +7,7 @@ import time
 ip = os.environ['MONGO_PORT_27017_TCP_ADDR']
 port = os.environ['MONGO_PORT_27017_TCP_PORT']
 
-client = MongoClient(ip, port)
+client = MongoClient(ip, int(port))
 db = client['inference'] # inference database
 collection = db[os.environ['NAME']] # model name
 post = {}
