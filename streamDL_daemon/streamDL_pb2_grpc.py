@@ -44,6 +44,11 @@ class streamDLbrokerStub(object):
                 request_serializer=streamDL__pb2.ModelName.SerializeToString,
                 response_deserializer=streamDL__pb2.Reply.FromString,
                 )
+        self.stop_deployment = channel.unary_unary(
+                '/streamDL.streamDLbroker/stop_deployment',
+                request_serializer=streamDL__pb2.ModelName.SerializeToString,
+                response_deserializer=streamDL__pb2.Reply.FromString,
+                )
 
 
 class streamDLbrokerServicer(object):
@@ -92,6 +97,13 @@ class streamDLbrokerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def stop_deployment(self, request, context):
+        """
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_streamDLbrokerServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -122,6 +134,11 @@ def add_streamDLbrokerServicer_to_server(servicer, server):
             ),
             'stop_online_train': grpc.unary_unary_rpc_method_handler(
                     servicer.stop_online_train,
+                    request_deserializer=streamDL__pb2.ModelName.FromString,
+                    response_serializer=streamDL__pb2.Reply.SerializeToString,
+            ),
+            'stop_deployment': grpc.unary_unary_rpc_method_handler(
+                    servicer.stop_deployment,
                     request_deserializer=streamDL__pb2.ModelName.FromString,
                     response_serializer=streamDL__pb2.Reply.SerializeToString,
             ),
@@ -227,6 +244,22 @@ class streamDLbroker(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/streamDL.streamDLbroker/stop_online_train',
+            streamDL__pb2.ModelName.SerializeToString,
+            streamDL__pb2.Reply.FromString,
+            options, channel_credentials,
+            call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def stop_deployment(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/streamDL.streamDLbroker/stop_deployment',
             streamDL__pb2.ModelName.SerializeToString,
             streamDL__pb2.Reply.FromString,
             options, channel_credentials,

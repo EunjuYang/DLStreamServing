@@ -20,7 +20,8 @@ class Client:
 
         deploy_generator = self._deploy_generator(model_file, model_name, ami_list, input_format, is_online_train, online_param)
         response = self.stub.set_deploy_model(deploy_generator)
-        print(response.message)
+        if response:
+            print("[DEPLOY] Success to deploy streamDL model %s" % model_name)
         return
 
     def get_deployed_model(self):
@@ -32,6 +33,19 @@ class Client:
 
         ami_list = self.stub.get_ami_list(streamDL_pb2.null())
         return ami_list.ami_id
+
+    def stop_deployment(self, name):
+
+        response = self.stub.stop_deployment(streamDL_pb2.ModelName(name=name))
+        if response.status:
+            print("[DELETE] Success to withdraw deployment %s" % name)
+        if response.status == False:
+            print("[Error] Fail to stop deployment")
+            print("    Error Message : %s" % response.message)
+        return response.status
+
+
+
 
     def _deploy_generator(self, model_file, model_name, ami_list, input_format, is_online_train, online_param):
 
@@ -145,6 +159,8 @@ if __name__ == '__main__':
         online_param['is_schedule'] = args.is_schedule
 
         client.set_deploy_model(model_file, model_name, ami_list, input_format, is_online_train, online_param)
+        model_list = client.get_deployed_model()
+        print_model_list(model_list)
 
     if args.mode == 'get':
         if args.streams:
@@ -153,6 +169,13 @@ if __name__ == '__main__':
         if args.models:
             model_list = client.get_deployed_model()
             print_model_list(model_list)
+
+    if args.mode == 'delete':
+        if args.model_name is None:
+            print("[Error] Please pass the model name with argument --model_name")
+        client.stop_deployment(args.model_name)
+        model_list = client.get_deployed_model()
+        print_model_list(model_list)
 
 
 

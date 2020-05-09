@@ -25,10 +25,28 @@ class streamDL:
         for ami in self.amis:
             ami_list.ami_id.append(ami)
 
+        input_fmt = streamDL_pb2.InputFmt(
+            look_back_win_size=self.input_fmt['look_back_win_size'],
+            input_shift_step=self.input_fmt['input_shift_step'],
+            look_forward_step=self.input_fmt['look_forward_step'],
+            look_forward_win_size=self.input_fmt['look_forward_win_size']
+        )
+        online_parameter = streamDL_pb2.onlineParam(
+            online_method=self.online_param['online_method'],
+            batch_size=self.online_param['batch_size'],
+            memory_method=self.online_param['memory_method'],
+            episodic_mem_size=self.online_param['episodic_mem_size'],
+            is_schedule=self.online_param['is_schedule']
+        )
+
         return streamDL_pb2.Model(name=self.name,
-                               amis=ami_list,
-                               is_online_train=self.is_online_train,
-                               create_time=self.create_time)
+                                  amis=ami_list,
+                                  is_online_train=self.is_online_train,
+                                  create_time=self.create_time,
+                                  input_fmt=input_fmt,
+                                  online_param=online_parameter,
+                                  UUID=self.UUID,
+                                  update_time=self.update_time)
 
     def set_online_train_info(self, online_train_list):
 
@@ -40,5 +58,9 @@ class streamDL:
 
     def get_online_train_info(self):
         return self.online_train_name_list
+
+    def __str__(self):
+
+        return self.name
 
 

@@ -57,6 +57,17 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         else:
             return False
 
+    def stop_deployment(self, request, context):
+
+        if self._is_duplicate_model(request.name):
+            self._delete_model(self.Manager[request.name])
+            self.Manager.pop(request.name)
+
+            return streamDL_pb2.Reply(status=True, message="Success to delete deployment")
+
+        else:
+            return streamDL_pb2.Reply(status=False, message="There's no model with requested name")
+
 
     def set_deploy_model(self, request, context):
 
@@ -142,7 +153,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
                 sp_names.append(name)
 
         # update sp_name information
-        dl_instance.set_sp_info(sp_names)
+        self.Manager[model_name].set_sp_info(sp_names)
 
         # create inference instance
         # TODO
@@ -154,7 +165,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             cep_id = sp_train_dst
             self._create_online_trainer(name, online_param, cep_id, num_amis)
             online_names.append(name)
-            dl_instance.set_online_train_info(online_names)
+            self.Manager[model_name].set_online_train_info(online_names)
 
         # delete tmp model file
         os.remove(file_path)
@@ -227,6 +238,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
 
         self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)
 
+
     def _delete_deployment(self, name):
 
         self.k8s_.delete_deployment(name, self.Namespace)
@@ -236,6 +248,22 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
 
         for name in name_list:
             self.k8s_.delete_deployment(name, self.Namespace)
+
+    def _delete_model(self, model):
+
+        print("* Delete deployments with model name %s" % model.name)
+
+        sp_list = model.get_sp_info()
+        for deploy in sp_list:
+            print("   ** delete deployment %s" % deploy)
+            self.k8s_.delete_deployment(deploy, self.Namespace)
+
+        if model.is_online_train:
+            online_list = model.get_online_train_info()
+            for deploy in online_list:
+                print("   ** delete deployment %s" % deploy)
+                self.k8s_.delete_deployment(deploy, self.Namespace)
+
 
 
 
