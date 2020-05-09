@@ -27,8 +27,24 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
 
         self.Manager = {}
         self.modelrepo_client = ModelRepoClient(self.ModelRepo['ep'])
-        self.name_spce = "dlstream"
 
+    def __del__(self):
+
+        for model_name in self.Manager.keys():
+
+            print("* Delete deployments with model name %s" % model_name)
+            model = self.Manager[model_name]
+
+            sp_list = model.get_sp_info()
+            for deploy in sp_list:
+                print("   ** delete deployment %s" % deploy)
+                self.k8s_.delete_deployment(deploy, self.Namespace)
+
+            if model.is_online_train:
+                online_list = model.get_online_train_info()
+                for deploy in online_list:
+                    print("   ** delete deployment %s" % deploy)
+                    self.k8s_.delete_deployment(deploy, self.Namespace)
 
     def _is_duplicate_model(self, name):
         """
@@ -106,10 +122,10 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             name = "sp-%s-%s-infer" %(model_name, ami)
             sp_src = self.stream_prefix + ami
             self._create_stream_parser_instance(name=name,
-                                                src=sp_src,
-                                                dst=sp_infer_dst,
-                                                is_online_train=False,
-                                                input_format_dict=input_fmt)
+                                                        src=sp_src,
+                                                        dst=sp_infer_dst,
+                                                        is_online_train=False,
+                                                        input_format_dict=input_fmt)
             sp_names.append(name)
 
         # create stream parser instance for train
@@ -118,7 +134,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             for ami in amis:
                 name = "sp-%s-%s-train" % (model_name, ami)
                 sp_src = self.stream_prefix + ami
-                self._create_stream_parser_instance(name=name,
+                status = self._create_stream_parser_instance(name=name,
                                                     src=sp_src,
                                                     dst=sp_train_dst,
                                                     is_online_train=is_online_train,
@@ -126,16 +142,19 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
                 sp_names.append(name)
 
         # update sp_name information
-        dl_instance.update_sp_info(sp_names)
+        dl_instance.set_sp_info(sp_names)
 
         # create inference instance
         # TODO
 
         # create online trainer instance (if is_online_train is true)
+        online_names = []
         if is_online_train:
-            name = "online-%s--train" % (model_name)
+            name = "online-%s-train" % (model_name)
             cep_id = sp_train_dst
             self._create_online_trainer(name, online_param, cep_id, num_amis)
+            online_names.append(name)
+            dl_instance.set_online_train_info(online_names)
 
         # delete tmp model file
         os.remove(file_path)
@@ -177,7 +196,10 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
                     "IS_ONLINE_TRAIN": str(is_online_train),
                     "BOOTSTRAP_SERVERS": self.KAFKA_BK}
 
-        self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)
+        response = self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)
+
+        return True
+
 
     def _create_online_trainer(self, name, online_param, cep_id, num_amis):
 
@@ -204,6 +226,16 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         }
 
         self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)
+
+    def _delete_deployment(self, name):
+
+        self.k8s_.delete_deployment(name, self.Namespace)
+
+
+    def _delete_deployment_list(self, name_list):
+
+        for name in name_list:
+            self.k8s_.delete_deployment(name, self.Namespace)
 
 
 

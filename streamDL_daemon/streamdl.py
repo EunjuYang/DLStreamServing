@@ -13,10 +13,10 @@ class streamDL:
         self.UUID = UUID
         self.online_param = online_param
         self.sp_name_list = []
+        self.online_train_name_list = []
         self.amis = amis
 
-    def update_sp_info(self, sp_name_list):
-
+    def set_sp_info(self, sp_name_list):
         self.sp_name_list = sp_name_list
 
     def get_model_instance(self):
@@ -29,5 +29,16 @@ class streamDL:
                                amis=ami_list,
                                is_online_train=self.is_online_train,
                                create_time=self.create_time)
+
+    def set_online_train_info(self, online_train_list):
+
+        self.online_train_name_list = online_train_list
+
+
+    def get_sp_info(self):
+        return self.sp_name_list
+
+    def get_online_train_info(self):
+        return self.online_train_name_list
 
 

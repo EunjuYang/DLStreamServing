@@ -21,6 +21,9 @@ service streamDLbroker{
 
     //
     rpc stop_online_train(ModelName) returns (Reply) {}
+
+    //
+    rpc stop_deployment(ModelName) returns (Reply) {}
 }
 
 message Chunk {

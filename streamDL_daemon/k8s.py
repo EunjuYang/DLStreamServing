@@ -85,10 +85,8 @@ class k8s:
 
     def deploy(self, name, img, label, portnum, replicas, namespace, env_dict):
 
-        print("deploy is called")
         deployment = self._create_deployment_object(name, img, label, name, portnum, replicas, env_dict)
         api_repsponse = self._create_deployment(deployment, namespace)
-        print(api_repsponse)
 
         return api_repsponse
 
@@ -100,7 +98,8 @@ class k8s:
             namespace=namespace
         )
 
-        print(api_response)
+        return api_response
+
 
     def update_deployment(self,  deployment, img, deployment_name, namespace):
 
