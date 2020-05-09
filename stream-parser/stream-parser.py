@@ -64,7 +64,7 @@ class StreamParser:
         self.src = os.environ['SRC']
         self.dst = os.environ['DST']
         self.group_id = self.src + "_" + self.dst
-        self._param_check(self.src)
+        #self._param_check(self.src)
 
         self.setting = {
             'bootstrap.servers': self.bootstrap_servers,

@@ -24,6 +24,12 @@ class Client:
             print("[DEPLOY] Success to deploy streamDL model %s" % model_name)
         return
 
+    def get_deployed_model_with_name(self, name):
+
+        model_name = streamDL_pb2.ModelName(name=name)
+        model_info = self.stub.get_deployed_model_with_name(model_name)
+        return model_info
+
     def get_deployed_model(self):
 
         return self.stub.get_deployed_model(streamDL_pb2.null())
@@ -43,8 +49,6 @@ class Client:
             print("[Error] Fail to stop deployment")
             print("    Error Message : %s" % response.message)
         return response.status
-
-
 
 
     def _deploy_generator(self, model_file, model_name, ami_list, input_format, is_online_train, online_param):
@@ -107,6 +111,22 @@ def print_model_list(model_list):
         print('|%s|%s|%s|%s|' %(model.name.center(14), stream_list.center(37), str(model.is_online_train).center(7), str(deployed_time).center(17)))
     print('+--------------+-------------------------------------+-------+-----------------+')
 
+def describe_model(model):
+
+    print('+--------------+-------------------------------------+-------+-----------------+')
+    print('|     Name     |             Streams                 | Train |   Deployed At   |')
+    print('+--------------+-------------------------------------+-------+-----------------+')
+
+    stream_list = (','.join(model.amis.ami_id))
+    deployed_time = datetime.fromtimestamp(float(model.create_time)).strftime('%Y-%m-%d %H:%M')
+    print('|%s|%s|%s|%s|' %(model.name.center(14), stream_list.center(37), str(model.is_online_train).center(7), str(deployed_time).center(17)))
+    print('+--------------+-------------------------------------+-------+-----------------+')
+    print('+ Input Format +')
+    print(model.input_fmt)
+    if model.is_online_train:
+        print('+ online train +')
+        print(model.online_param)
+
 
 if __name__ == '__main__':
     client = Client('127.0.0.1:50091')
@@ -134,7 +154,7 @@ if __name__ == '__main__':
     parser.add_argument('--episodic_mem_size', type=int, required=False)
     parser.add_argument('--is_schedule', type=bool, required=False)
     args = parser.parse_args()
-    mode = ('deploy', 'delete', 'get')
+    mode = ('deploy', 'delete', 'get', 'describe')
 
     if args.mode not in mode:
         print("* streamDL-serving * \n\n Usage Error. \n Please use help option to get information with -h, --help")
@@ -176,6 +196,14 @@ if __name__ == '__main__':
         client.stop_deployment(args.model_name)
         model_list = client.get_deployed_model()
         print_model_list(model_list)
+
+    if args.mode == 'describe':
+
+        if args.model_name is None:
+            print("[Error] Please pass the model name with argument --model_name")
+
+        model = client.get_deployed_model_with_name(args.model_name)
+        describe_model(model)
 
 
 

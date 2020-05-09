@@ -25,6 +25,9 @@ service streamDLbroker{
     //
     rpc stop_deployment(ModelName) returns (Reply) {}
 
+    //
+    rpc get_deployed_model_with_name(ModelName) returns (Model) {}
+
     // TODO
     rpc download_model(ModelName) returns (stream Chunk) {}
 }

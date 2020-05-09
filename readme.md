@@ -145,12 +145,12 @@ $ streamDLctl get --models
 
 ```bash
 $ streamDLctl deploy --model_file /tmp/hello_model.h5 \
-										 --model_name hello-test --amis ami0,ami1 \
-										 --is_adaptive True --is_online_train True \
-										 --look_back_win_size 3 --input_shift_step 1 \
-										 --look_forward_step 1 --look_forward_win_size 1 \
-										 --online_method cont --batch_size 32 --memory_method cossim \
-										 --episodic_mem_size 100 --is_schedule True
+	--model_name hello-test --amis ami0,ami1 \
+	--is_adaptive True --is_online_train True \
+	--look_back_win_size 3 --input_shift_step 1 \
+	--look_forward_step 1 --look_forward_win_size 1 \
+	--online_method cont --batch_size 32 --memory_method cossim \
+	--episodic_mem_size 100 --is_schedule True
 
 $ streamDLctl get --models
 

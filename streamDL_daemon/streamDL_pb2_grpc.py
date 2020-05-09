@@ -49,6 +49,16 @@ class streamDLbrokerStub(object):
                 request_serializer=streamDL__pb2.ModelName.SerializeToString,
                 response_deserializer=streamDL__pb2.Reply.FromString,
                 )
+        self.get_deployed_model_with_name = channel.unary_unary(
+                '/streamDL.streamDLbroker/get_deployed_model_with_name',
+                request_serializer=streamDL__pb2.ModelName.SerializeToString,
+                response_deserializer=streamDL__pb2.Model.FromString,
+                )
+        self.download_model = channel.unary_stream(
+                '/streamDL.streamDLbroker/download_model',
+                request_serializer=streamDL__pb2.ModelName.SerializeToString,
+                response_deserializer=streamDL__pb2.Chunk.FromString,
+                )
 
 
 class streamDLbrokerServicer(object):
@@ -104,6 +114,20 @@ class streamDLbrokerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def get_deployed_model_with_name(self, request, context):
+        """
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def download_model(self, request, context):
+        """TODO
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_streamDLbrokerServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -141,6 +165,16 @@ def add_streamDLbrokerServicer_to_server(servicer, server):
                     servicer.stop_deployment,
                     request_deserializer=streamDL__pb2.ModelName.FromString,
                     response_serializer=streamDL__pb2.Reply.SerializeToString,
+            ),
+            'get_deployed_model_with_name': grpc.unary_unary_rpc_method_handler(
+                    servicer.get_deployed_model_with_name,
+                    request_deserializer=streamDL__pb2.ModelName.FromString,
+                    response_serializer=streamDL__pb2.Model.SerializeToString,
+            ),
+            'download_model': grpc.unary_stream_rpc_method_handler(
+                    servicer.download_model,
+                    request_deserializer=streamDL__pb2.ModelName.FromString,
+                    response_serializer=streamDL__pb2.Chunk.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -262,5 +296,37 @@ class streamDLbroker(object):
         return grpc.experimental.unary_unary(request, target, '/streamDL.streamDLbroker/stop_deployment',
             streamDL__pb2.ModelName.SerializeToString,
             streamDL__pb2.Reply.FromString,
+            options, channel_credentials,
+            call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def get_deployed_model_with_name(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/streamDL.streamDLbroker/get_deployed_model_with_name',
+            streamDL__pb2.ModelName.SerializeToString,
+            streamDL__pb2.Model.FromString,
+            options, channel_credentials,
+            call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def download_model(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/streamDL.streamDLbroker/download_model',
+            streamDL__pb2.ModelName.SerializeToString,
+            streamDL__pb2.Chunk.FromString,
             options, channel_credentials,
             call_credentials, compression, wait_for_ready, timeout, metadata)

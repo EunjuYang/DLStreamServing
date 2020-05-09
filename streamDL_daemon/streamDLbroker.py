@@ -62,11 +62,16 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         if self._is_duplicate_model(request.name):
             self._delete_model(self.Manager[request.name])
             self.Manager.pop(request.name)
-
             return streamDL_pb2.Reply(status=True, message="Success to delete deployment")
 
         else:
             return streamDL_pb2.Reply(status=False, message="There's no model with requested name")
+
+    def get_deployed_model_with_name(self, request, context):
+
+        if self._is_duplicate_model(request.name):
+            return self.Manager[request.name].get_model_instance()
+
 
 
     def set_deploy_model(self, request, context):
@@ -131,7 +136,8 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         sp_infer_dst = "dlstream.sp.%s.infer" % model_name
         for ami in amis:
             name = "sp-%s-%s-infer" %(model_name, ami)
-            sp_src = self.stream_prefix + ami
+            #sp_src = self.stream_prefix + ami
+            sp_src = "dlstream." + ami
             self._create_stream_parser_instance(name=name,
                                                         src=sp_src,
                                                         dst=sp_infer_dst,
@@ -194,18 +200,18 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
 
 
         img = "dlstream/stream-parser:v01"
-        label = name
+        label = str(name)
         portnum = 59990
         replicas = 1
         namespace = "dlstream"
         env_dict = {"LOOP_BACK_WIN_SIZE" : str(input_format_dict['look_back_win_size']),
                     "INPUT_SHIFT_STEP" : str(input_format_dict['input_shift_step']),
-                    "SRC":src,
-                    "DST":dst,
+                    "SRC":str(src),
+                    "DST":str(dst),
                     "LOOK_FORWARD_STEP":str(input_format_dict['look_forward_step']),
                     "LOOK_FORWARD_WIN_SIZE":str(input_format_dict['look_forward_win_size']),
                     "IS_ONLINE_TRAIN": str(is_online_train),
-                    "BOOTSTRAP_SERVERS": self.KAFKA_BK}
+                    "BOOTSTRAP_SERVERS": str(self.KAFKA_BK)}
 
         response = self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)
 
