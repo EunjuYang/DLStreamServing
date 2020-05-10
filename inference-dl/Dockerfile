@@ -31,7 +31,7 @@ RUN python3.6 -m pip install confluent-kafka -i http://mirror.kakao.com/pypi/sim
 RUN python3.6 -m pip install kafka
 RUN python3.6 -m pip install pymongo
 
-RUN git clone https://$USERNAME:$PASSWORD@github.com/iop851/DLStreamServing.git
+RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
 WORKDIR /DLStreamServing/inference-dl
 ENV PYTHONPATH=/DLStreamServing:/DLStreamServing/online-dl
 
