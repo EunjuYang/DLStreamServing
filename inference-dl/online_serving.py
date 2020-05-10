@@ -16,7 +16,7 @@ if __name__ == '__main__':
     cep_id = os.environ['CEP_ID']
     kafka_bk = os.environ['KAFKA_BK']
     stream_bk = os.environ['STREAM_BK']
-    batch_size = int(os.environ['BATCH_SIZE'])
+    batch_size = int(float(os.environ['BATCH_SIZE']))
     _dtype = os.environ['DTYPE']
 
     # Not yet determine to make InferenceDL
