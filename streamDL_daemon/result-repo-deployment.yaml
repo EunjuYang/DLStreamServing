@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resultrepo
+  labels:
+    app: resultrepo
+  namespace: dlstream
+spec:
+  selector:
+    matchLabels:
+      app: resultrepo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: resultrepo
+    spec:
+      containers:
+        - name: resultrepo
+          image: mongo:4.2
+          ports:
+            - containerPort: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: resultrepo
+  labels:
+    app: resultrepo
+  namespace: dlstream
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    app: resultrepo

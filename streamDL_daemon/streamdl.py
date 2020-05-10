@@ -15,6 +15,7 @@ class streamDL:
         self.sp_name_list = []
         self.online_train_name_list = []
         self.amis = amis
+        self.inferencedl_name_list = []
 
     def set_sp_info(self, sp_name_list):
         self.sp_name_list = sp_name_list
@@ -49,9 +50,13 @@ class streamDL:
                                   update_time=self.update_time)
 
     def set_online_train_info(self, online_train_list):
-
         self.online_train_name_list = online_train_list
 
+    def set_inferencedl_info(self, inferencedl_list):
+        self.inferencedl_name_list = inferencedl_list
+
+    def get_inferencedl_info(self):
+        return self.inferencedl_name_list
 
     def get_sp_info(self):
         return self.sp_name_list

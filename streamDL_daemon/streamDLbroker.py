@@ -21,9 +21,15 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         self.kafka_client = KafkaClient(hosts=self.KAFKA_BK)
 
         self.ModelRepo = {}
+        self.ResultRepo = {}
         self.ModelRepo['name'] = "modelrepo"
         self.Namespace = "dlstream"
+        self.ModelRepo['portnum'] = 8888
         self.ModelRepo['ep'] = self.k8s_.get_svc_ep(name=self.ModelRepo['name'],namespace=self.Namespace)
+        self.ModelRepo['svc_addr'] = "%s.%s:%d" %(self.ModelRepo['name'], self.Namespace, self.ModelRepo['portnum'])
+        self.ResultRepo['name'] = "resultrepo"
+        self.ResultRepo['portnum'] = 27017
+        self.ResultRepo['svc_addr'] = "%s.%s:%d" %(self.ResultRepo['name'], self.Namespace, self.ResultRepo['portnum'])
 
         self.Manager = {}
         self.modelrepo_client = ModelRepoClient(self.ModelRepo['ep'])
@@ -32,11 +38,17 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
 
         for model_name in self.Manager.keys():
 
+
             print("* Delete deployments with model name %s" % model_name)
             model = self.Manager[model_name]
 
             sp_list = model.get_sp_info()
             for deploy in sp_list:
+                print("   ** delete deployment %s" % deploy)
+                self.k8s_.delete_deployment(deploy, self.Namespace)
+
+            infdl_list = model.get_inferencedl_info()
+            for deploy in infdl_list:
                 print("   ** delete deployment %s" % deploy)
                 self.k8s_.delete_deployment(deploy, self.Namespace)
 
@@ -150,7 +162,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             sp_train_dst = "dlstream.sp.%s.train" % model_name
             for ami in amis:
                 name = "sp-%s-%s-train" % (model_name, ami)
-                sp_src = self.stream_prefix + ami
+                sp_src = "dlstream." + ami
                 status = self._create_stream_parser_instance(name=name,
                                                     src=sp_src,
                                                     dst=sp_train_dst,
@@ -162,7 +174,14 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         self.Manager[model_name].set_sp_info(sp_names)
 
         # create inference instance
-        # TODO
+        inferencedl_names = []
+        name = "inferencedl-%s" % (model_name)
+        cep_id = sp_infer_dst
+        # This should be updated
+        batch_size = 3
+        self._create_inferencedl_instance(name=name, cep_id=cep_id, batch_size=batch_size)
+        inferencedl_names.append(name)
+        self.Manager[model_name].set_inferencedl_info(inferencedl_names)
 
         # create online trainer instance (if is_online_train is true)
         online_names = []
@@ -217,6 +236,26 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
 
         return True
 
+    def _create_inferencedl_instance(self, name, cep_id, batch_size):
+
+        img = "dlstream/inferencedl:v01"
+        label = str(name)
+        replicas = 1
+        namespace = "dlstream"
+        portnum = 32449
+        env_dict = {
+            "MODEL_NAME": name,
+            "MODEL_REPO_ADDR": self.ModelRepo['svc_addr'],
+            "RESULT_REPO_ADDR": self.ResultRepo['svc_addr'],
+            "CEP_ID": cep_id,
+            "KAFKA_BK": str(self.KAFKA_BK),
+            "STREAM_BK": "143.248.146.115:9092",
+            "BATCH_SIZE": str(batch_size),
+            "DTYPE": "float32"
+        }
+
+        response = self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)
+
 
     def _create_online_trainer(self, name, online_param, cep_id, num_amis):
 
@@ -234,7 +273,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             "NUM_AMI": str(num_amis),
             "EPISODIC_MEM_SIZE": "100",
             "IS_SCHEDULE": str(online_param["is_schedule"]),
-            "MODEL_REPO_ADDR": self.ModelRepo['ep'],
+            "MODEL_REPO_ADDR": self.ModelRepo['svc_addr'],
             "CEP_ID": cep_id,
             "KAFKA_BK": self.KAFKA_BK,
             "BATCH_SIZE": str(online_param["batch_size"]),
