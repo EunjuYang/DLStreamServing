@@ -179,7 +179,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         cep_id = sp_infer_dst
         # This should be updated
         batch_size = 3
-        self._create_inferencedl_instance(name=name, cep_id=cep_id, batch_size=batch_size)
+        self._create_inferencedl_instance(name=name, model_name=model_name, cep_id=cep_id, batch_size=batch_size)
         inferencedl_names.append(name)
         self.Manager[model_name].set_inferencedl_info(inferencedl_names)
 
@@ -188,7 +188,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         if is_online_train:
             name = "online-%s-train" % (model_name)
             cep_id = sp_train_dst
-            self._create_online_trainer(name, online_param, cep_id, num_amis)
+            self._create_online_trainer(name, model_name, online_param, cep_id, num_amis)
             online_names.append(name)
             self.Manager[model_name].set_online_train_info(online_names)
 
@@ -236,7 +236,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
 
         return True
 
-    def _create_inferencedl_instance(self, name, cep_id, batch_size):
+    def _create_inferencedl_instance(self, name, model_name, cep_id, batch_size):
 
         img = "dlstream/inferencedl:v01"
         label = str(name)
@@ -244,9 +244,9 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         namespace = "dlstream"
         portnum = 32449
         env_dict = {
-            "MODEL_NAME": name,
+            "MODEL_NAME": model_name,
             "MODEL_REPO_ADDR": self.ModelRepo['svc_addr'],
-            "RESULT_REPO_ADDR": self.ResultRepo['svc_addr'],
+            "RESULT_ADDR": self.ResultRepo['svc_addr'],
             "CEP_ID": cep_id,
             "KAFKA_BK": str(self.KAFKA_BK),
             "STREAM_BK": "143.248.146.115:9092",
@@ -257,7 +257,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         response = self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)
 
 
-    def _create_online_trainer(self, name, online_param, cep_id, num_amis):
+    def _create_online_trainer(self, name, model_name, online_param, cep_id, num_amis):
 
         img = "dlstream/onlinedl:v01"
         label = name
@@ -265,7 +265,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         replicas = 1
         namespace = "dlstream"
         env_dict = {
-            "MODEL_NAME": name,
+            "MODEL_NAME": model_name,
             "ONLINE_METHOD": online_param['online_method'],
             "FRAMEWORK": "keras",
             "SAVEWEIGHT": "True",

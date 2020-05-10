@@ -32,6 +32,7 @@ RUN python3.6 -m pip install kafka
 RUN python3.6 -m pip install pymongo
 
 RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
+RUN mkdir -p /tmp/inference/
 WORKDIR /DLStreamServing/inference-dl
 ENV PYTHONPATH=/DLStreamServing:/DLStreamServing/online-dl
 

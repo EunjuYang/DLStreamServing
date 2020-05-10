@@ -4,7 +4,7 @@
 * MODEL_NAME
 ###Broker
 * MODEL_REPO_ADDR
-* RESULT_REPO_ADDR: mongodb [ip:port]
+* RESULT_ADDR: mongodb [ip:port]
 * CEP_ID: target of stream-parser
 * KAFKA_BK : kafka [ip:port, ip:port, ...]
 * STREAM_BK : will be deprecated, but required.
