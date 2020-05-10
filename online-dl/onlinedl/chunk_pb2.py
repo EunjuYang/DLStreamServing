@@ -18,7 +18,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x0b\x63hunk.proto\"3\n\x05\x43hunk\x12\x0e\n\x06\x62uffer\x18\x01 \x01(\x0c\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0c\n\x04loss\x18\x03 \x01(\x02\"\x17\n\x07Request\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x17\n\x05Reply\x12\x0e\n\x06length\x18\x01 \x01(\x05\x32X\n\nFileServer\x12\"\n\x0cupload_model\x12\x06.Chunk\x1a\x06.Reply\"\x00(\x01\x12&\n\x0e\x64ownload_model\x12\x08.Request\x1a\x06.Chunk\"\x00\x30\x01\x62\x06proto3'
+  serialized_pb=b'\n\x0b\x63hunk.proto\"3\n\x05\x43hunk\x12\x0e\n\x06\x62uffer\x18\x01 \x01(\x0c\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0c\n\x04loss\x18\x03 \x01(\x02\"\x17\n\x07Request\x12\x0c\n\x04name\x18\x01 \x01(\t\"]\n\tModelInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0bupdate_time\x18\x02 \x01(\t\x12\x0c\n\x04loss\x18\x03 \x01(\x02\x12\x0e\n\x06status\x18\x04 \x01(\x08\x12\x0f\n\x07message\x18\x05 \x01(\t\"\x17\n\x05Reply\x12\x0e\n\x06length\x18\x01 \x01(\x05\x32\x82\x01\n\nFileServer\x12\"\n\x0cupload_model\x12\x06.Chunk\x1a\x06.Reply\"\x00(\x01\x12&\n\x0e\x64ownload_model\x12\x08.Request\x1a\x06.Chunk\"\x00\x30\x01\x12(\n\x0eget_model_info\x12\x08.Request\x1a\n.ModelInfo\"\x00\x62\x06proto3'
 )
 
 
@@ -100,6 +100,65 @@ _REQUEST = _descriptor.Descriptor(
 )
 
 
+_MODELINFO = _descriptor.Descriptor(
+  name='ModelInfo',
+  full_name='ModelInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='ModelInfo.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='update_time', full_name='ModelInfo.update_time', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='loss', full_name='ModelInfo.loss', index=2,
+      number=3, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='status', full_name='ModelInfo.status', index=3,
+      number=4, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='message', full_name='ModelInfo.message', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=93,
+  serialized_end=186,
+)
+
+
 _REPLY = _descriptor.Descriptor(
   name='Reply',
   full_name='Reply',
@@ -126,12 +185,13 @@ _REPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=93,
-  serialized_end=116,
+  serialized_start=188,
+  serialized_end=211,
 )
 
 DESCRIPTOR.message_types_by_name['Chunk'] = _CHUNK
 DESCRIPTOR.message_types_by_name['Request'] = _REQUEST
+DESCRIPTOR.message_types_by_name['ModelInfo'] = _MODELINFO
 DESCRIPTOR.message_types_by_name['Reply'] = _REPLY
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -149,6 +209,13 @@ Request = _reflection.GeneratedProtocolMessageType('Request', (_message.Message,
   })
 _sym_db.RegisterMessage(Request)
 
+ModelInfo = _reflection.GeneratedProtocolMessageType('ModelInfo', (_message.Message,), {
+  'DESCRIPTOR' : _MODELINFO,
+  '__module__' : 'chunk_pb2'
+  # @@protoc_insertion_point(class_scope:ModelInfo)
+  })
+_sym_db.RegisterMessage(ModelInfo)
+
 Reply = _reflection.GeneratedProtocolMessageType('Reply', (_message.Message,), {
   'DESCRIPTOR' : _REPLY,
   '__module__' : 'chunk_pb2'
@@ -164,8 +231,8 @@ _FILESERVER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=118,
-  serialized_end=206,
+  serialized_start=214,
+  serialized_end=344,
   methods=[
   _descriptor.MethodDescriptor(
     name='upload_model',
@@ -183,6 +250,15 @@ _FILESERVER = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_REQUEST,
     output_type=_CHUNK,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='get_model_info',
+    full_name='FileServer.get_model_info',
+    index=2,
+    containing_service=None,
+    input_type=_REQUEST,
+    output_type=_MODELINFO,
     serialized_options=None,
   ),
 ])

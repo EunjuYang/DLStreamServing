@@ -3,6 +3,7 @@ syntax = "proto3";
 service FileServer {
   rpc upload_model(stream Chunk) returns (Reply) {}
   rpc download_model(Request) returns (stream Chunk) {}
+  rpc get_model_info(Request) returns (ModelInfo) {}
 }
 
 message Chunk {
@@ -13,6 +14,14 @@ message Chunk {
 
 message Request {
   string name = 1;
+}
+
+message ModelInfo{
+  string name = 1;
+  string update_time = 2;
+  float loss = 3;
+  bool status = 4;
+  string message = 5;
 }
 
 message Reply {

@@ -13,6 +13,7 @@ class Model:
         self.model_file = model_file
         self.num_push = 0
         self.last_update = time.time()
+        self.loss = 0
 
         # TODO
         self.loss = []
@@ -20,9 +21,17 @@ class Model:
     def __str__(self):
         return self.model_name
 
-    def flag_update(self):
+    def flag_update(self, loss=0):
         self.num_push += 1
-        self.last_update = time.strftime('%c', time.localtime(time.time()))
+        self.last_update = str(time.time())
+        self.loss = loss
+
+    def get_last_update(self):
+        return str(self.last_update)
+
+    def get_loss(self):
+        return self.loss
+
 
 class Manager:
 
@@ -70,8 +79,9 @@ class Manager:
         with open(file_path, 'wb') as f:
             for chunk in chunks:
                 f.write(chunk.buffer)
+            loss = chunk.loss
 
-            model.flag_update()
+            model.flag_update(loss)
 
         return file_path
 

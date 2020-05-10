@@ -23,6 +23,11 @@ class FileServerStub(object):
                 request_serializer=chunk__pb2.Request.SerializeToString,
                 response_deserializer=chunk__pb2.Chunk.FromString,
                 )
+        self.get_model_info = channel.unary_unary(
+                '/FileServer/get_model_info',
+                request_serializer=chunk__pb2.Request.SerializeToString,
+                response_deserializer=chunk__pb2.ModelInfo.FromString,
+                )
 
 
 class FileServerServicer(object):
@@ -40,6 +45,12 @@ class FileServerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def get_model_info(self, request, context):
+        """Missing associated documentation comment in .proto file"""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_FileServerServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -52,6 +63,11 @@ def add_FileServerServicer_to_server(servicer, server):
                     servicer.download_model,
                     request_deserializer=chunk__pb2.Request.FromString,
                     response_serializer=chunk__pb2.Chunk.SerializeToString,
+            ),
+            'get_model_info': grpc.unary_unary_rpc_method_handler(
+                    servicer.get_model_info,
+                    request_deserializer=chunk__pb2.Request.FromString,
+                    response_serializer=chunk__pb2.ModelInfo.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -92,5 +108,21 @@ class FileServer(object):
         return grpc.experimental.unary_stream(request, target, '/FileServer/download_model',
             chunk__pb2.Request.SerializeToString,
             chunk__pb2.Chunk.FromString,
+            options, channel_credentials,
+            call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def get_model_info(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/FileServer/get_model_info',
+            chunk__pb2.Request.SerializeToString,
+            chunk__pb2.ModelInfo.FromString,
             options, channel_credentials,
             call_credentials, compression, wait_for_ready, timeout, metadata)

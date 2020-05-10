@@ -11,15 +11,14 @@ class ModelManager:
         self.stub = chunk_pb2_grpc.FileServerStub(channel)
         self.model_name = model_name
 
-    def upload_model(self, file_path, loss):
+    def upload_model(self, file_path, model_name):
         """
         client library to upload model file
         :param file_path: file path to upload
         :param model_name: name of model
         :return:
         """
-
-        chunks_generator = self._get_file_chunks(file_path, self.model_name, loss)
+        chunks_generator = get_file_chunks(file_path, model_name)
         response = self.stub.upload_model(chunks_generator)
         assert response.length == os.path.getsize(file_path)
 
@@ -38,15 +37,11 @@ class ModelManager:
 
     def _save_chunks_to_file(self, chunks, filename=None):
 
-        chunk = next(chunks)
-        print("# File is saved in %s" % filename)
-
         with open(filename, 'wb') as f:
-            f.write(chunk.buffer)
             for chunk in chunks:
                 f.write(chunk.buffer)
-
         return filename
+
 
     def _get_file_chunks(self, filename, model_name, loss):
 

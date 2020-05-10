@@ -8,15 +8,15 @@ from modelrepo.model import Manager
 CHUNK_SIZE = 1024 * 1024  # 1MB
 
 
-def get_file_chunks(filename, model_name=None):
+def get_file_chunks(filename, model_name=None, loss=0):
 
     with open(filename, 'rb') as f:
-        yield chunk_pb2.Chunk(name=model_name)
+        yield chunk_pb2.Chunk(name=model_name, loss=loss)
         while True:
             piece = f.read(CHUNK_SIZE);
             if len(piece) == 0:
                 return
-            yield chunk_pb2.Chunk(name=model_name, buffer=piece)
+            yield chunk_pb2.Chunk(name=model_name, buffer=piece, loss=loss)
 
 
 def save_chunks_to_file(chunks, filename=None):
@@ -38,14 +38,14 @@ class Client:
         channel = grpc.insecure_channel(address)
         self.stub = chunk_pb2_grpc.FileServerStub(channel)
 
-    def upload_model(self, file_path, model_name):
+    def upload_model(self, file_path, model_name, loss):
         """
         client library to upload model file
         :param file_path: file path to upload
         :param model_name: name of model
         :return:
         """
-        chunks_generator = get_file_chunks(file_path, model_name)
+        chunks_generator = get_file_chunks(file_path, model_name, loss)
         response = self.stub.upload_model(chunks_generator)
         assert response.length == os.path.getsize(file_path)
 
@@ -69,6 +69,11 @@ class Client:
                 f.write(chunk.buffer)
         return filename
 
+    def get_model_info(self, model_name):
+
+        response = self.stub.get_model_info(chunk_pb2.Request(name=model_name))
+        return response
+
 
 
 class ModelServer(chunk_pb2_grpc.FileServerServicer):
@@ -91,6 +96,21 @@ class ModelServer(chunk_pb2_grpc.FileServerServicer):
                 if model is None:
                     return chunk_pb2.Reply(None)
                 return get_file_chunks(model.model_file, model_name)
+
+            def get_model_info(self, request, context):
+                model_name = request.name
+                model = self.manager.get(model_name)
+
+                # Model Name Error
+                if model is None:
+                    return chunk_pb2.ModelInfo(status=False, message="[Error] No model matching with the requested name")
+
+                return chunk_pb2.ModelInfo(name=model_name,
+                                           update_time=model.get_last_update(),
+                                           loss=model.get_loss(),
+                                           status=True)
+
+
 
             def _save_file(self, chunks):
 
