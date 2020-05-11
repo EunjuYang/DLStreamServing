@@ -303,11 +303,17 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             print("   ** delete deployment %s" % deploy)
             self.k8s_.delete_deployment(deploy, self.Namespace)
 
+        infdl_list = model.get_inferencedl_info()
+        for deploy in infdl_list:
+            print("   ** delete deployment %s" % deploy)
+            self.k8s_.delete_deployment(deploy, self.Namespace)
+
         if model.is_online_train:
             online_list = model.get_online_train_info()
             for deploy in online_list:
                 print("   ** delete deployment %s" % deploy)
                 self.k8s_.delete_deployment(deploy, self.Namespace)
+
 
 
 

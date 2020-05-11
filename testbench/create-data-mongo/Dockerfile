@@ -5,7 +5,7 @@ ARG PASSWORD
 ARG KAKAO="-i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com"
 ARG NAME
 ARG MONGO_PORT_27017_TCP_ADDR
-ARG MONGO_PORT_27017_TCP_PORT
+ARG MONGO_PORT_27017_TCP_PORT=27017
 
 RUN sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' /etc/apt/sources.list
 

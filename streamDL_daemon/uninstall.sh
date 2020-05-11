@@ -10,11 +10,11 @@ echo "* delete /opt/streamDL /var/log/streamDL..."
 sudo rm -rf /opt/streamDL /var/log/streamDL
 
 sudo su <<HERE
-echo "   ** Install kubernetes"
+echo "   ** Uninstall kubernetes"
 pip uninstall -y kubernetes
-echo "   ** Install pykafka"
+echo "   ** Uninstall pykafka"
 pip uninstall -y pykafka
-echo "   ** Install grpcio and grpcio-tools"
+echo "   ** Uninstall grpcio and grpcio-tools"
 pip uninstall -y grpcio grpcio-tools
 HERE
 
