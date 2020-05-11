@@ -20,3 +20,4 @@ HERE
 
 #kubectl delete -f ./modelrepo-deployment.yaml
 #kubectl delete -f ./dlstream-namespace.yaml
+#kubectl delete -f ./result-repo-deployment.yaml

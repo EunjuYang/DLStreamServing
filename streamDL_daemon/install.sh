@@ -1,6 +1,7 @@
 #!/bin/bash
 kubectl create -f ./dlstream-namespace.yaml
 kubectl create -f ./modelrepo-deployment.yaml
+kubectl create -f ./result-repo-deployment.yaml
 
 python -m grpc_tools.protoc -I./proto --python_out=. --grpc_python_out=. ./proto/streamDL.proto
 

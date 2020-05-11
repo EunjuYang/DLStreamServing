@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export StreamDLHome=~/DEV/StreamDLServing
+export StreamDLHome={YOUR StreamDL Home}
 export KAFKA_BK="143.248.146.115:9092,143.248.146.116:9092,143.248.146.117:9092"
 export STREAM_PREFIX="dlstream.ami"
 export PYTHONPATH=$StreamDLHome
