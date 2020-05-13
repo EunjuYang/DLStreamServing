@@ -39,7 +39,7 @@ class InferenceDL:
         # Do not use encode and decode
         for i in np.unique(id):
             post = {}
-            post['amiid'] = i
+            post['amiid'] = i.item()
             post['pred'] = result[np.where(id==i)].tolist() # shape is (batch,)
             post['true'] = data[np.where(id==i)].tolist() # shape is (batch,)
             post['timestamp'] = time.time() # time.time() is global UTC value
