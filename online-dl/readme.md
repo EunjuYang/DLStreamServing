@@ -23,12 +23,15 @@ $ docker run \
         -e NUM_AMI=1 \ 
         -e EPISODIC_MEM_SIZE=100 \
         -e IS_SCHEDULE=true \
-        -e MODEL_REPO_ADDR=[값 확인해주세요. 테스트할때는 제외했어요.] \
+        -e MODEL_REPO_ADDR={repoaddr:port} \
         -e CEP_ID=cep_test \
         -e KAFKA_BK={kafkanode0:portnum},... \
-        -e STREAM_BK={kafkanode0},... \
+        -e STREAM_BK={kafkanode0},... #  나중에 지우면 됩니다.
         -e BATCH_SIZE=32 \
         -e DTYPE=float32 \
+        -e LB_SIZE=36 \
+        -e LF_SIZE=1 \
+        -e PREFIX=dlstream.ami \
         -e IS_ADAPTIVE=false \
     onlinedl/trainer:v01 \
     python3.6 online_trainer.py
@@ -47,9 +50,12 @@ $ docker run \
         -e MODEL_REPO_ADDR={address:port}
         -e CEP_ID={cep id from stream-parser}
         -e KAFKA_BK={address:port, ...}
-        -e STREAM_BK={address, ...}
+        -e STREAM_BK={address, ...} # 나중에 지우면 됩니다.
         -e BATCH_SIZE={number}
         -e DTYPE={float32 or float64 or other else}
+        -e LB_SIZE=36 \
+        -e LF_SIZE=1 \
+        -e PREFIX=dlstream.ami \
         (optional) -e FRAMEWORK=keras(developed) or tf(not yet developed)
         (optional) -e SAVEWEIGHT=false or true
         (optional) -e IS_ADAPTVIE=false or true
@@ -63,9 +69,12 @@ $ docker run \
         -e MEM_METHOD=ringbuffer
         -e MODEL_REPO_ADDR={address:port}
         -e KAFKA_BK={address:port, ...}
-        -e STREAM_BK={address, ...}
+        -e STREAM_BK={address, ...} # 나중에 지우면 됩니다.
         -e BATCH_SIZE={number}
         -e DTYPE={float32 or float64 or other else}
+        -e LB_SIZE=36 \
+        -e LF_SIZE=1 \
+        -e PREFIX=dlstream.ami \
         (optional) -e FRAMEWORK=keras(developed) or tf(not yet developed)
         (optional) -e SAVEWEIGHT=false or true
         (optional) -e IS_ADAPTVIE=false or true
@@ -79,28 +88,12 @@ $ docker run \
         -e MODEL_REPO_ADDR={address:port}
         -e CEP_ID={cep id from stream-parser}
         -e KAFKA_BK={address:port, ...}
-        -e STREAM_BK={address, ...}
-        -e BATCH_SIZE={number} # TODO: this should be deprecated
+        -e STREAM_BK={address, ...} # 나중에 지우면 됩니다.
+        -e BATCH_SIZE={number} # TODO: this should be deprecated at IncrementalDL
         -e DTYPE={float32 or float64 or other else}
+        -e LB_SIZE=36 \
+        -e LF_SIZE=1 \
+        -e PREFIX=dlstream.ami \
         (optional) -e FRAMEWORK=keras(developed) or tf(not yet developed)
         (optional) -e SAVEWEIGHT=false or true
 ```
-
-## Main Description of Online-DL
-
-
-#### Mode of Online Deep Learning
-* ContinualDL : continual OnlineDL
-  * consume : original continual learning
-  * compare_consume : continual learning with proposed scheduling method by changha lee
-* IncrementalDL
-
-#### Continual DL
-
-##### 1) Memory option
-* inMemory : ring-buffer for continual learning
-* cossimMemory : cosine similarity based buffer
-  * insert : without proposed method by changha lee
-  * compare_insert with proposed method by changha lee
-  
-##### 2) Continual DL Method
