@@ -14,7 +14,6 @@ class InferenceDL:
         :return: InferenceDL object
         """
 
-
         self.model_manager = ModelManager(repo_addr, model_name)
         self.model_path = "/tmp/inference/%s_init"%(model_name)
 
@@ -29,12 +28,12 @@ class InferenceDL:
         self.client = MongoClient('mongodb://%s'%(result_addr))
         self.db = self.client['inference'] # create database named as a model name
         self.collection = self.db[model_name]
+        self.collection.remove({})
         self.model_name = model_name
 
     # Below consume-function implement feedforward and send results to database (mongodb)
     def consume(self, data, id):
-        data = data.reshape(self.batch_input_shape)
-        result = self.model.predict(data, batch_size=data.shape[0])
+        result = self.model.predict(data.reshape(self.batch_input_shape), batch_size=data.shape[0])
         result = result.reshape((data.shape[0],))
         data = data[:,-1]
         # Do not use encode and decode
