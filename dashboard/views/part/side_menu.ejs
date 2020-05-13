@@ -1,0 +1,30 @@
+<section id="sideMenu">
+    <div class="side-head">
+        <p>KEPCO Dashboard</p>
+        <div id="subject">DEEP LEARNING SERVICES</div>
+        <hr>
+    </div>
+    <nav>
+        <% switch(title) { case "home": %>
+            <a href="/main/home" class="active"><i class="fa fa-home" aria-hidden="true"></i> Home</a>
+            <a href="/main/model_management"><i class="fa fa-sticky-note-o" aria-hidden="true"></i> Model Management</a>
+            <a href="/main/deploy_model_info"><i class="fa fa-bookmark-o" aria-hidden="true"></i> Deploy Model Info</a>
+            <a href="/main/inference"><i class="fa fa-user-circle-o" aria-hidden="true"></i> Model Inference</a>
+        <% break; case "model_management": %>
+            <a href="/main/home"><i class="fa fa-home" aria-hidden="true"></i> Home</a>
+            <a href="/main/model_management" class="active"><i class="fa fa-sticky-note-o" aria-hidden="true"></i> Model Management</a>
+            <a href="/main/deploy_model_info"><i class="fa fa-bookmark-o" aria-hidden="true"></i> Deploy Model Info</a>
+            <a href="/main/inference"><i class="fa fa-user-circle-o" aria-hidden="true"></i> Model Inference</a>
+        <% break; case "deploy_model_info": %>
+            <a href="/main/home"><i class="fa fa-home" aria-hidden="true"></i> Home</a>
+            <a href="/main/model_management"><i class="fa fa-sticky-note-o" aria-hidden="true"></i> Model Management</a>
+            <a href="/main/deploy_model_info" class="active"><i class="fa fa-bookmark-o" aria-hidden="true"></i> Deploy Model Info</a>
+            <a href="/main/inference"><i class="fa fa-user-circle-o" aria-hidden="true"></i> Model Inference</a>
+        <% break; case "inference": %>
+            <a href="/main/home"><i class="fa fa-home" aria-hidden="true"></i> Home</a>
+            <a href="/main/model_management"><i class="fa fa-sticky-note-o" aria-hidden="true"></i> Model Management</a>
+            <a href="/main/deploy_model_info"><i class="fa fa-bookmark-o" aria-hidden="true"></i> Deploy Model Info</a>
+            <a href="/main/inference" class="active"><i class="fa fa-user-circle-o" aria-hidden="true"></i> Model Inference</a>
+        <% break; } %>
+    </nav>
+</section>

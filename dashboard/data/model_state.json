@@ -1,0 +1,60 @@
+{
+    "model_1": {
+        "model_name": "hello",
+        "UUID": "e5ca04b1-2a2a-d6a1-896a-6d7367c5d3d8",
+        "model_object": null,
+        "create_time": "2020-04-20 16:22:00",
+        "update_time": "2020-04-20 16:22:00",
+        "is_online_train": true,
+        "is_adaptive": true,
+        "amis": ["ami0", "ami1", "ami2"],
+        "input_format": {
+            "look_back_win_size": 2,
+            "input_shift_step": 1,
+            "look_forward_step": 3,
+            "look_forward_win_size": 3
+        },
+        "online_method": "cont",
+        "batch_size": 10,
+        "cont_param": {
+            "memory_method": "ring_buffer",
+            "is_schedule": true,
+            "episodic_mem_size": 10
+        },
+        "model_state": "deploy"
+    },
+    "model_2":{
+        "model_name": "test-hello",
+        "UUID": "cfda29b4-5f92-6142-129f-5fc56b017792",
+        "model_object": null,
+        "create_time": "2020-04-24 16:22:00",
+        "update_time": "",
+        "is_online_train": false,
+        "is_adaptive": true,
+        "amis": ["ami2", "ami3", "ami4"],
+        "input_format": {
+            "look_back_win_size": 2,
+            "input_shift_step": 1
+        },
+        "model_state": "deploy"
+    },
+    "model_3":{
+        "model_name": "third-model",
+        "UUID": "245583ca-1384-678c-25be-e08b3f8f5ac9",
+        "model_object": null,
+        "create_time": "2020-04-24 16:22:00",
+        "update_time": "",
+        "is_online_train": true,
+        "is_adaptive": true,
+        "amis": ["ami6", "ami7", "ami8"],
+        "input_format": {
+            "look_back_win_size": 2,
+            "input_shift_step": 1,
+            "look_forward_step": 3,
+            "look_forward_win_size": 3
+        },
+        "online_method": "inc",
+        "batch_size": 10,
+        "model_state": "deploy"
+    }
+}

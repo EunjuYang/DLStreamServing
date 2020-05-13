@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>KEPCO-Dashboard</title>
+    <meta property="og:title" content="KEPCO-Dashborad">
+    <meta name="description" content="Serving Platform">
+    <link rel="canonical" href="/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#ad38f1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="mask-icon" href="/img/icons/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="js/chart/Chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <% include ./part/side_menu.ejs %>
+    <% include ./part/header.ejs %>
+
+    <section id="content-area">
+      <div class="heading">
+        <h1>Deploy Model Name: <%= model.model_name %></h1>
+      </div>
+      <div class="cards">
+        <% for(var key in result) { %>
+        <div class="col-md-6">
+          <div class="card">
+            <h2>AMI ID: <%= key %></h2>
+              <div id="<%= key %>" style="margin: 0px 0px 0px -50px"></div>
+          </div>
+        </div>
+        <% } %>
+        <% for(var key in result) { %>
+          <script>
+          if(<%= key %>){
+            let pred_v = <%= JSON.stringify(result[key].pred_v) %>;
+            let true_v = <%= JSON.stringify(result[key].true_v) %>;
+
+            let layout = {
+              legend: {
+                x: 0.3,
+                y: 1.2,
+                "orientation": "h",
+                font: {size: 20}
+              }
+            };
+
+            Plotly.newPlot("<%= key %>", [{
+              y: [0],
+              name: 'Prediction',
+              mode: 'lines',
+              line: {color: '#80CAF6'}
+            }, {
+              y: [0],
+              mode: 'lines',
+              name: 'True',
+              line: {color: '#DF56F1'}
+            }], layout);
+
+            let cnt = 1;
+
+            let interval = setInterval(function() {
+
+              Plotly.extendTraces("<%= key %>", {
+                y: [[pred_v[cnt-1]], [true_v[cnt]]]
+              }, [0, 1])
+              if(cnt > 150) {
+                  Plotly.relayout("<%= key %>",{
+                      xaxis: {
+                          range: [cnt-150,cnt]
+                      }
+                  });
+              }
+              if(++cnt === pred_v.length) clearInterval(interval);
+            }, 1000);
+          }
+          </script>
+        <% } %>
+      </div>
+    </section>
+  </body>
+</html>

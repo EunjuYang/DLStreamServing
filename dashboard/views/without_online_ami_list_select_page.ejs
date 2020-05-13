@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>KEPCO-Dashboard</title>
+    <meta property="og:title" content="KEPCO-Dashborad">
+    <meta name="description" content="Serving Platform">
+    <link rel="canonical" href="/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ad38f1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/css/input_styles.css">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="js/chart/Chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      function setParentText(){
+        var ami = document.forms[0];
+        var txt = "";
+        var i;
+        for (i = 0; i < ami.length; i++) {
+          if (ami[i].checked) {
+            txt = txt + ami[i].value + "   ";
+          }
+        }
+        opener.document.getElementById("ami_list_without_online").value = txt;
+      }
+    </script>
+  </head>
+  <body>
+    <section id="content-area">
+      <div class="heading">
+        <h1>AMI LIST</h1>
+      </div>
+      <div class="cards" style="top: 35%">
+        <div class="card">
+          <div class="signup-form">
+            <form id=ami_list_form>
+              <div class="form-row">
+                <div class="form-group">
+                  <div class="form-input">
+                  <% for(var i=0; i < amis.length; i++) { %>
+                    <label><input type="checkbox" name="ami" id="ami" checked="checked" value=<%= amis[i]%> > <%= amis[i]%> </label>
+                  <% } %>
+                  </div>
+                </div>
+              </div>
+              <div class="form-submit">
+                <input type="button" class="submit" id="submit" name="submit" value="Select" onclick="setParentText()">
+                <input type="button" class="submit" id="reset" name="reset" value="Close" onclick="window.close()">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

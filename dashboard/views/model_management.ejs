@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>KEPCO-Dashboard</title>
+    <meta property="og:title" content="KEPCO-Dashborad">
+    <meta name="description" content="Serving Platform">
+    <link rel="canonical" href="/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ad38f1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="mask-icon" href="/img/icons/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="js/chart/Chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <% include ./part/side_menu.ejs %>
+    <% include ./part/header.ejs %>
+
+    <section id="content-area">
+      <div class="heading">
+        <h1>Dashboard</h1>
+        <p><%= title %></p>
+      </div>
+      <button onclick="location.href='input_model'">Deploy Model</button><br><br>
+      <div class="cards">
+        <div class="col-md-full">
+          <div class="card">
+            <table class="table table-striped table-hover table-dark">
+              <th style="width:15%; text-align:center;">Model Name</th>
+              <th style="width:20%; text-align:center;">Create Time</th>
+              <th style="width:20%; text-align:center;">Update Time</th>
+              <th style="width:10%; text-align:center;">Model Status</th>
+              <th style="width:35%; margin:auto; text-align:center;">Action</th>
+              <% for(var i=0; i < models.length; i++) { %>
+              <tr>
+                <td style="width:15%; text-align:center;"><%= models[i].model_name %></td>
+                <td style="width:20%; text-align:center;"><%= models[i].create_time %></td>
+                <td style="width:20%; text-align:center;"><%= models[i].update_time %></td>
+                <td style="width:10%; text-align:center;">Deploy</td>
+                <td style="width:35%; text-align:center;">
+                  <form action="/main/deploy_model_info" method="post" style="display: inline;">
+                    <input type="hidden" name="deploy_model_uuid" value=<%= models[i].UUID %>>
+                    <input type="submit" value="Model Info"/>
+                  </form>
+                  <% if(models[i].model_state == 'pause') { %>
+                    <form action="/main/restart_model" method="post" style="display: inline;">
+                      <input type="hidden" name="restart_model_uuid" value=<%= models[i].UUID %>>
+                      <input type="submit" value="Restart Deploy"/>
+                    </form>
+                  <% } else { %>
+                    <form action="/main/pause_model" method="post" style="display: inline;">
+                      <input type="hidden" name="pause_model_uuid" value=<%= models[i].UUID %>>
+                      <input type="submit" value="Pause Model"/>
+                    </form>
+                  <% } %>
+                  <form action="/main/inference" method="post" style="display: inline;">
+                    <input type="hidden" name="inference_model_uuid" value=<%= models[i].UUID %>>
+                    <input type="submit" value="Inference Info"/>
+                  </form>
+                  <form action="/main/delete_model" method="post" style="display: inline;">
+                    <input type="hidden" name="delete_model_uuid" value=<%= models[i].UUID %>>
+                    <input type="submit" value="Delete Model"/>
+                  </form>
+                </td>
+              </tr>
+              <% } %>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

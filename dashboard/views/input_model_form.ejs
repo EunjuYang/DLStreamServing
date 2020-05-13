@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>KEPCO-Dashboard</title>
+    <meta property="og:title" content="KEPCO-Dashborad">
+    <meta name="description" content="Serving Platform">
+    <link rel="canonical" href="/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ad38f1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/css/input_styles.css">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="js/chart/Chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+
+      function openChildOn()
+      {
+        var openWin;
+        window.name = "online_main_form";
+        openWin = window.open("online_ami_list_select_page.html", "openChildOn", "width=800, height=480, resizable = no, scrollbars = yes");
+      }
+
+      function openChildWithoutOn()
+      {
+        var openWin;
+        window.name = "without_online_main_form";
+        openWin = window.open("without_online_ami_list_select_page.html", "openChildWithoutOn", "width=800, height=480, resizable = no, scrollbars = yes");
+      }
+  </script>
+  </head>
+  <body>
+    <section id="content-area">
+      <div class="heading">
+        <h1>Deploy Model Information Input Page</h1>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="tab">
+            <button class="tablinks" onclick="openCity(event, 'Online Learning')" id="defaultOpen" >Online Learning</button>
+            <button class="tablinks" onclick="openCity(event, 'Without Online Learning')" >Without Online Learning</button>
+          </div>
+
+          <div id="Online Learning" class="tabcontent">
+            <div class="signup-form">
+              <form action="/main/model_management" method="post" class="register-form" id="online_main_form" enctype="multipart/form-data">
+                <div class="form-row">
+                  <div class="form-group">
+                    <div class="form-input">
+                      <label for="model_name" class="required">Model name</label>
+                      <input type="text" name="model_name" id="model_name" required/>
+                    </div>
+                    <div class="form-input">
+                      <label for="model_object" class="required">Pre-trained Model</label>
+                      <input type="file" name="model_object" id="model_object" required/>
+                    </div>
+                    <div class="form-radio">
+                      <div class="label-flex">
+                        <label for="is_adaptive">adaptive learning</label>
+                      </div>
+                      <div class="form-radio-group">
+                        <div class="form-radio-item">
+                          <input type="radio" name="is_adaptive" id="adaptive_t" value="true" checked>
+                          <label for="adaptive_t">TRUE</label>
+                          <span class="check"></span>
+                        </div>
+                        <div class="form-radio-item">
+                          <input type="radio" name="is_adaptive" id="adaptive_f" value="false">
+                          <label for="adaptive_f">FALSE</label>
+                          <span class="check"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-input">
+                      <label for="amis" class="required" style="display: inline; width: 50%; vertical-align:middle; text-align:center; line-height:50px;">TARGET AMI</label>
+                      <input type="button" value="Search AMI LIST" onclick="openChildOn()" style="margin-top: 5px; display: inline; line-height:10px; float: right; height: 40px; width: 40%;"></button>
+                      <br>
+                      <textarea name="ami_list_online" id="ami_list_online" form="online_main_form" style="resize: none; font-size: 24px;" readonly required></textarea>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <fieldset style="margin: 35px 0px 0px 0px; border: 1px solid black; width: 95%; height: 86%;" form="online_main_form">
+                      <legend style="font-size: 16px; text-align: left; margin: -35px -15px 0px 0px; float: right; display: block; padding: 0px 0px 30px 0px; border: none;">INPUT FORMAT</legend>
+                      <div class="form-input" style="width: 95%; margin-left: 10px; margin-bottom: 35px;">
+                        <label for="look_back_win_size" class="required" style="width: 95%; margin-left: 10px;">Look Back Window Size(Number)</label>
+                        <input type="number" min="1", max="100" name="look_back_win_size" id="look_back_win_size" style="width: 95%; margin: 0px 0px 10px 10px;" required />
+                      </div>
+                      <div class="form-input" style="width: 95%; margin-left: 10px; margin-bottom: 35px;">
+                        <label for="input_shift_step" class="required" style="width: 95%; margin-left: 10px;">Input Shift Step(Number)</label>
+                        <input type="number" min="1", max="100" name="input_shift_step" id="input_shift_step" style="width: 95%; margin-left: 10px;" required />
+                      </div>
+                      <div class="form-input" style="width: 95%; margin-left: 10px; margin-bottom: 35px;">
+                        <label for="look_forward_step" class="required" style="width: 95%; margin-left: 10px;">Look Forward Step(Number)</label>
+                        <input type="number" min="1", max="100" name="look_forward_step" id="look_forward_step" style="width: 95%; margin-left: 10px;" required />
+                      </div>
+                      <div class="form-input" style="width: 95%; margin-left: 10px; margin-bottom: 35px;">
+                        <label for="look_forward_win_size" class="required" style="width: 95%; margin-left: 10px;">Look Forward Window Size(Number)</label>
+                        <input type="number" min="1", max="100" name="look_forward_win_size" id="look_forward_win_size" style="width: 95%; margin-left: 10px;" required />
+                      </div>
+                    </fieldset>
+                  </div>
+                  <div class="form-group">
+                    <div class="form-radio">
+                      <div class="label-flex">
+                        <label for="online_method">Online Learning Method</label>
+                      </div>
+                      <div class="form-radio-group">
+                        <div class="form-radio-item">
+                          <input type="radio" name="online_method" id="cont" value="cont" checked>
+                          <label for="cont">Continual</label>
+                          <span class="check"></span>
+                        </div>
+                        <div class="form-radio-item">
+                          <input type="radio" name="online_method" value="inc" id="inc">
+                          <label for="inc">Incremental</label>
+                          <span class="check"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-input">
+                      <label for="batch_size" class="required">Batch Size(Number)</label>
+                      <input type="number" min="1", max="100" name="batch_size" id="batch_size" required />
+                    </div>
+                    <div class="form-radio">
+                      <div class="label-flex">
+                        <label for="memory_method">Memory Method</label>
+                      </div>
+                      <div class="form-radio-group">
+                        <div class="form-radio-item">
+                          <input type="radio" name="memory_method" id="ring_buffer" value="ring_buffer" checked>
+                          <label for="ring_buffer">Ring Buffer</label>
+                          <span class="check"></span>
+                        </div>
+                        <div class="form-radio-item">
+                          <input type="radio" name="memory_method" id="cossim" value="cossim">
+                          <label for="cossim">Cossim</label>
+                          <span class="check"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-radio">
+                      <div class="label-flex">
+                        <label for="is_schedule">Schedule</label>
+                      </div>
+                      <div class="form-radio-group">
+                        <div class="form-radio-item">
+                          <input type="radio" name="is_schedule" id="schedule_t" value="true" checked>
+                          <label for="schedule_t">True</label>
+                          <span class="check"></span>
+                        </div>
+                        <div class="form-radio-item">
+                          <input type="radio" name="is_schedule" id="schedule_f" value="false">
+                          <label for="schedule_f">Flase</label>
+                          <span class="check"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-input">
+                      <label for="episodic_mem_size" class="required">Episodic Memory Size(Number)</label>
+                      <input type="number" min="1", max="100" name="episodic_mem_size" id="episodic_mem_size" />
+                    </div>
+                  </div>
+                  <input type="hidden" id="is_online_train" name="is_online_train" value="true">
+                </div>
+                <div class="form-submit">
+                  <input type="submit" value="Deploy Model" class="submit" id="submit" name="submit" />
+                  <input type="reset" value="Reset" class="submit" id="reset" name="reset" />
+                  <input type="button" value="Cancel" class="submit" id="cancel" name="cancel" onClick="location.href='model_management'">
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div id="Without Online Learning" class="tabcontent">
+            <div class="signup-form">
+              <form action="/main/model_management" method="post" class="register-form" id="without_online_main_form" enctype="multipart/form-data">
+                <div class="form-row">
+                  <div class="form-group">
+                    <div class="form-input">
+                      <label for="model_name" class="required">Model name</label>
+                      <input type="text" name="model_name" id="model_name" required/>
+                    </div>
+                    <div class="form-input">
+                      <label for="model_object" class="required">Pre-trained Model</label>
+                      <input type="file" name="model_object" id="model_object" required/>
+                    </div>
+                    <div class="form-radio">
+                      <div class="label-flex">
+                        <label for="is_adaptive">adaptive learning</label>
+                      </div>
+                      <div class="form-radio-group">
+                        <div class="form-radio-item">
+                          <input type="radio" name="is_adaptive" id="adaptive_t" checked>
+                          <label for="adaptive_t">TRUE</label>
+                          <span class="check"></span>
+                        </div>
+                        <div class="form-radio-item">
+                          <input type="radio" name="is_adaptive" id="adaptive_f">
+                          <label for="adaptive_f">FALSE</label>
+                          <span class="check"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-input">
+                      <label for="amis" class="required" style="display: inline; width: 50%; vertical-align:middle; text-align:center; line-height:50px;">TARGET AMI</label>
+                      <input type="button" value="Search AMI LIST" onclick="openChildWithoutOn()" style="margin-top: 5px; display: inline; line-height:10px; float: right; height: 40px; width: 40%;"></button>
+                      <br>
+                      <textarea name="ami_list_without_online" id="ami_list_without_online" form="without_online_main_form" style="resize: none; font-size: 24px;" readonly required></textarea>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <fieldset style="margin: 35px 0px 0px 0px; border: 1px solid black; width: 95%; height: 45%;" form="online_main_form">
+                      <legend style="font-size: 16px; text-align: left; margin: -35px -15px 0px 0px; float: right; display: block; padding: 0px 0px 30px 0px; border: none;">INPUT FORMAT</legend>
+                      <div class="form-input" style="width: 95%; margin-left: 10px; margin-bottom: 35px;">
+                        <label for="look_back_win_size" class="required" style="width: 95%; margin-left: 10px;">Look Back Window Size(Number)</label>
+                        <input type="number" min="1", max="100" name="look_back_win_size" id="look_back_win_size" style="width: 95%; margin: 0px 0px 10px 10px;" required />
+                      </div>
+                      <div class="form-input" style="width: 95%; margin-left: 10px; margin-bottom: 35px;">
+                        <label for="input_shift_step" class="required" style="width: 95%; margin-left: 10px;">Input Shift Step(Number)</label>
+                        <input type="number" min="1", max="100" name="input_shift_step" id="input_shift_step" style="width: 95%; margin-left: 10px;" required />
+                      </div>
+                    </fieldset>
+                  </div>
+                  <input type="hidden" id="is_online_train" name="is_online_train" value="false">
+                </div>
+                <div class="form-submit">
+                  <input type="submit" value="Deploy Model" class="submit" id="submit" name="submit" />
+                  <input type="reset" value="Reset" class="submit" id="reset" name="reset" />
+                  <input type="button" value="Cancel" class="submit" id="cancel" name="cancel" onClick="location.href='model_management'">
+                </div>
+              </form>
+            </div>
+          </div>
+          <script>
+          document.getElementById("defaultOpen").click();
+          function openCity(evt, cityName) {
+            // Declare all variables
+            var i, tabcontent, tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+              tabcontent[i].style.display = "none";
+            }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+              tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(cityName).style.display = "block";
+            evt.currentTarget.className += " active";
+          }
+          </script>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
