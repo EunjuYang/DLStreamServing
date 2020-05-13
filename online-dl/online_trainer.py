@@ -27,9 +27,13 @@ if __name__ == '__main__':
 
     cep_id = os.environ['CEP_ID']
     kafka_bk = os.environ['KAFKA_BK']
-    stream_bk = os.environ['STREAM_BK']
+    stream_bk = os.environ['STREAM_BK'] # TODO: this should be deprecated in every case
     batch_size = int(os.environ['BATCH_SIZE']) # TODO: this should be deprecated at IncrementalDL
     _dtype = os.environ['DTYPE']
+    lb_size = int(os.environ['LB_SIZE'])
+    lf_size = int(os.environ['LF_SIZE'])
+    prefix = os.environ['PREFIX']
+
     is_adaptive = bool(os.environ['IS_ADAPTIVE']) # optional for ContinualDL, Not used for Incremental
 
     if online_method == 'inc':
@@ -39,11 +43,13 @@ if __name__ == '__main__':
                                 repo_addr=model_repo_addr)
         beta, beta1 = trainer.profile()
         strstub = IncStreamDLStub(kafka_bk=kafka_bk,
-                               cep_id=cep_id,
-                               stream_bk=stream_bk,
-                               batch_size=batch_size,
-                               dtype=_dtype,
-                               adaptive_batch_mode=True) # always adaptive
+                                  cep_id=cep_id,
+                                  stream_bk=stream_bk,
+                                  batch_size=batch_size,
+                                  dtype=_dtype,
+                                  lb_size=lb_size,
+                                  lf_size=lf_size,
+                                  prefix=prefix)
         strstub.set_beta_for_incremental(beta, beta1)
         test_error = 0.3 # from seong-hwan's origin code.
         while True:
@@ -66,6 +72,9 @@ if __name__ == '__main__':
                                stream_bk=stream_bk,
                                batch_size=batch_size,
                                dtype=_dtype,
+                               lb_size=lb_size,
+                               lf_size=lf_size,
+                               prefix=prefix,
                                adaptive_batch_mode=is_adaptive)
         stream_generator = strstub.batch_train_generator()
         while True:

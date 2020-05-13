@@ -383,15 +383,15 @@ class ContinualDL(OnlineDL):
 
 class IncrementalDL(OnlineDL):
 
-    def __init__(self, model_path,online_method,framework,repo_addr):
+    def __init__(self, model_name, online_method,framework,repo_addr):
         """
-        :param model_path:
+        :param model_name:
         :param online_method:
         :param framework:
         :param repo_addr: repo address
         """
 
-        super(IncrementalDL, self).__init__(model_path, online_method, framework, repo_addr)
+        super(IncrementalDL, self).__init__(model_name, online_method, framework, repo_addr)
         pass
 
     def consume(self, x, y, epoch):

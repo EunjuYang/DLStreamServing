@@ -18,6 +18,9 @@ if __name__ == '__main__':
     stream_bk = os.environ['STREAM_BK']
     batch_size = int(float(os.environ['BATCH_SIZE']))
     _dtype = os.environ['DTYPE']
+    lb_size = int(os.environ['LB_SIZE'])
+    lf_size = int(os.environ['LF_SIZE'])
+    prefix = os.environ['PREFIX']
 
     # Not yet determine to make InferenceDL
     inferencer = InferenceDL(model_name=model_name,
@@ -28,7 +31,10 @@ if __name__ == '__main__':
                            stream_bk=stream_bk,
                            batch_size=batch_size,
                            is_train=False,
-                           dtype=_dtype)
+                           dtype=_dtype,
+                           lb_size=lb_size,
+                           lf_size=lf_size,
+                           prefix=prefix)
     stream_generator = strstub.batch_generator()
     while True:
         # you need to add id information and parse it and submit it into mongodb
