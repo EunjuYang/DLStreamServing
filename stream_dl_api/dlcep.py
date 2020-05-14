@@ -8,8 +8,6 @@ import kafka, os, threading, sys, time
 import math
 import numpy as np
 
-IS_BROKER = False
-
 
 class StreamDLStub():
 
@@ -19,6 +17,9 @@ class StreamDLStub():
                  stream_bk,
                  batch_size,
                  dtype,
+                 lb_size,
+                 lf_size,
+                 prefix,
                  is_train=True,
                  adaptive_batch_mode=True):
         """
@@ -40,11 +41,9 @@ class StreamDLStub():
         self.batch_size = batch_size
         self.dtype = dtype
 
-        if IS_BROKER:
-            lb_size, is_train, lf_size = self._get_stream_fmt_from_broker()
-            self.lb_size = lb_size
-            self.is_train = is_train
-            self.lf_size = lf_size
+        self.lb_size = lb_size # integer
+        self.lf_size = lf_size # integer
+        self.prefix = prefix # any string
 
         self.consumer.start()
         self.adaptive_batch = adaptive_batch_mode
@@ -55,25 +54,6 @@ class StreamDLStub():
                 self.batch_train_generator = self._batch_train_generator
         else:
             self.batch_generator = self._adaptive_batch_inference_generator
-
-    def _get_stream_fmt_from_broker(self):
-        # grpc call
-        lb_size = None
-        is_train = None
-        lf_size = None
-        return lb_size, is_train, lf_size
-
-    def set_stream_fmt(self, lb_size, is_train, lf_size=0):
-        """
-        setting stream data format
-        :param lb_size: (int) look back window size
-        :param is_train: (bool) is stream used for train or not
-        :param lf_size: (int) look forward window size
-        :return:
-        """
-        self.lb_size = lb_size
-        self.is_train = is_train
-        self.lf_size = lf_size
 
     def _adaptive_batch_inference_generator(self):
         while True:
@@ -90,7 +70,7 @@ class StreamDLStub():
 
             for i in range(bs):
                 x_batch[i] = self.buffer[0][:self.lb_size]
-                id_batch[i] = self.buffer[0][-1]
+                id_batch[i] = int(self.buffer[0][-1].split(self.prefix)[-1])
                 self.buffer.pop(0)
 
             yield (bs, x_batch, id_batch)
@@ -114,7 +94,7 @@ class StreamDLStub():
             for i in range(bs):
                 x_batch[i] = self.buffer[0][:self.lb_size]
                 y_batch[i] = self.buffer[0][self.lb_size:-1]
-                id_batch[i] = self.buffer[0][-1]
+                id_batch[i] = int(self.buffer[0][-1].split(self.prefix)[-1])
                 self.buffer.pop(0)
 
             yield (bs, x_batch, y_batch, id_batch)
@@ -135,7 +115,7 @@ class StreamDLStub():
             for i in range(self.batch_size):
                 x_batch[i] = self.buffer[0][:self.lb_size]
                 y_batch[i] = self.buffer[0][self.lb_size:-1]
-                id_batch[i] = self.buffer[0][-1]
+                id_batch[i] = int(self.buffer[0][-1].split(self.prefix)[-1])
                 self.buffer.pop(0)
 
             yield (self.batch_size, x_batch, y_batch, id_batch)
@@ -143,9 +123,9 @@ class StreamDLStub():
 
 class IncStreamDLStub(StreamDLStub):
 
-    def __init__(self, kafka_bk, cep_id, stream_bk, batch_size, dtype):
+    def __init__(self, kafka_bk, cep_id, stream_bk, batch_size, dtype, lb_size, lf_size, prefix):
 
-        super(IncStreamDLStub, self).__init__(kafka_bk, cep_id, stream_bk, batch_size, dtype)
+        super(IncStreamDLStub, self).__init__(kafka_bk, cep_id, stream_bk, batch_size, dtype, lb_size, lf_size, prefix)
         self.ld = 1
         self.last_timestep = 0
         self.err_queue = SizeQueue(5, 0.3)
@@ -343,7 +323,6 @@ class Consumer(threading.Thread):
             else:
                 data = msg.value().decode('utf-8').split(',')
                 data = np.array(data[:-1])
-                data = data.astype(self.dtype)
                 self.buffer.append(data)
 
     def get_buffer(self):
