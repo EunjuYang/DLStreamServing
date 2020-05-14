@@ -202,6 +202,8 @@ class OnlineDL:
         self.online_method = online_method
         self.framework = framework
 
+        self._loss = None
+
         model = tf.keras.models.load_model(self.model_path)
 
         if self.online_method == 'inc':
@@ -243,8 +245,11 @@ class OnlineDL:
 
     def save(self):
         self.model.save(self.model_path)
-        # TODO changha - update loss
-        self.model_manager.upload_model(self.model_filename,loss=0.0)
+        self.model_manager.upload_model(self.model_filename,loss=self._loss)
+
+    def _send_result(self, pred, true, loss):
+        #TODO: send result to result-repo using mongodb
+        pass
 
     @staticmethod
     def _check_attribute_error(target, arg_name):
@@ -304,6 +309,7 @@ class ContinualDL(OnlineDL):
         with tf.GradientTape() as tape:
             pred = self.model(x)
             loss_value = self.loss_fn(target, pred)
+        self._loss = loss_value.numpy()
         now_grads = tape.gradient(loss_value, self.model.trainable_weights)
         flat_now_grad = tf.concat([tf.reshape(grad, [-1]) for grad in now_grads], 0)
 
@@ -345,6 +351,7 @@ class ContinualDL(OnlineDL):
         with tf.GradientTape() as tape:
             pred = self.model(x)
             loss_value = self.loss_fn(target, pred)
+        self._loss = loss_value.numpy()
         now_grads = tape.gradient(loss_value, self.model.trainable_weights)
         flat_now_grad = tf.concat([tf.reshape(grad, [-1]) for grad in now_grads], 0)
 
@@ -397,7 +404,7 @@ class IncrementalDL(OnlineDL):
     def consume(self, x, y, epoch):
         x = x.reshape(self.batch_input_shape)
         history = self.model.fit(x, y, batch_size=len(x), epochs=epoch, shuffle=False, verbose=0)
-        return history.history['loss'][0]
+        return history.history['loss'][-1] # history.history['loss'] is [loss_epoch0, loss_epoch1, ... loss_epochN] and we want final loss_epochN
 
     # profiling procedure is implemented at once when calling __init__ function.
     def profile(self):
