@@ -7,13 +7,13 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.linear_model import LinearRegression
 from onlinedl.utils import ModelManager
+from pymongo import MongoClient
 
 class OnlineDLError(Exception):
     __module__ = Exception.__module__
 
     def __str__(self):
         return "not yet supported"
-
 
 def _k_subabs(y_true, y_pred):
     return K.mean(K.abs(y_true - y_pred), axis=-1)
@@ -185,7 +185,7 @@ class cossimMemory(inMemory):
 
 class OnlineDL:
 
-    def __init__(self,model_name,online_method,framework,repo_addr):
+    def __init__(self,model_name,online_method,framework,repo_addr, result_addr):
         """
 
         :param model_name:
@@ -202,6 +202,15 @@ class OnlineDL:
         self.online_method = online_method
         self.framework = framework
 
+        # mongodb
+        self.client = MongoClient('mongodb://%s' % (result_addr))
+        self.db = self.client['onlinedl']
+        self.collection = self.db[model_name]
+        self.collection.remove({}) # TODO: will be deprecated
+        self.model_name = model_name
+
+        self._loss = None
+
         model = tf.keras.models.load_model(self.model_path)
 
         if self.online_method == 'inc':
@@ -211,13 +220,15 @@ class OnlineDL:
                 _tt = self._check_attribute_error(model, 'tt')
 
                 # recompile the keras model
-                self.model = model.compile(optimizer=model.optimizer,
-                                           loss=model.loss,
-                                           metrics=model.metrics + [_k_subabs],
-                                           loss_weights=model.loss_weights,
-                                           sample_weight_mode=model.sample_weight_mode if model.sample_weight_mode else None,
-                                           weighted_metrics=_wm,
-                                           target_tensors=_tt)
+                model.compile(optimizer=model.optimizer, loss=model.loss,
+                              metrics=model.metrics + [_k_subabs],
+                              loss_weights=model.loss_weights,
+                              sample_weight_mode=model.sample_weight_mode if model.sample_weight_mode else None,
+                              weighted_metrics=_wm,
+                              target_tensors=_tt)
+                self.model = model
+                self.batch_input_shape = (-1,) + model.input_shape[1:]
+                self.batch_output_shape = (-1,) + model.output_shape[1:]
             elif self.framework == 'tf':
                 # TODO make tf code
                 raise OnlineDLError
@@ -243,8 +254,7 @@ class OnlineDL:
 
     def save(self):
         self.model.save(self.model_path)
-        # TODO changha - update loss
-        self.model_manager.upload_model(self.model_filename,loss=0.0)
+        self.model_manager.upload_model(self.model_filename,loss=self._loss) # start from initial model (i.e. 0-iteration)
 
     @staticmethod
     def _check_attribute_error(target, arg_name):
@@ -263,10 +273,21 @@ class OnlineDL:
             else:
                 return target.weighted_matrics
 
+    def _send_result(self, pred, true, id):
+        #TODO: send result to result-repo using mongodb
+        for i in np.unique(id):
+            post = {}
+            post['amiid'] = i.item()
+            post['pred'] = pred[np.where(id==i)].tolist() # shape is (batch,)
+            post['true'] = true[np.where(id==i)].tolist() # shape is (batch,)
+            post['loss'] = self._loss.item()
+            post['timestamp'] = time.time() # time.time() is global UTC value
+            self.collection.insert_one(post)
+
 
 class ContinualDL(OnlineDL):
 
-    def __init__(self,model_name,online_method,framework,mem_method,num_ami,episodic_mem_size,is_schedule,repo_addr):
+    def __init__(self,model_name,online_method,framework,mem_method,num_ami,episodic_mem_size,is_schedule,repo_addr,result_addr):
         """
         :param model_name:
         :param online_method:
@@ -278,7 +299,7 @@ class ContinualDL(OnlineDL):
         :param repo_addr:
         """
 
-        super(ContinualDL, self).__init__(model_name, online_method, framework, repo_addr)
+        super(ContinualDL, self).__init__(model_name, online_method, framework, repo_addr, result_addr)
 
         episodic_mem_size = episodic_mem_size
         self.mem_method = mem_method
@@ -304,6 +325,8 @@ class ContinualDL(OnlineDL):
         with tf.GradientTape() as tape:
             pred = self.model(x)
             loss_value = self.loss_fn(target, pred)
+        self._loss = loss_value.numpy()
+        self._send_result(pred.numpy(), target, id)
         now_grads = tape.gradient(loss_value, self.model.trainable_weights)
         flat_now_grad = tf.concat([tf.reshape(grad, [-1]) for grad in now_grads], 0)
 
@@ -345,6 +368,8 @@ class ContinualDL(OnlineDL):
         with tf.GradientTape() as tape:
             pred = self.model(x)
             loss_value = self.loss_fn(target, pred)
+        self._loss = loss_value.numpy()
+        self._send_result(pred.numpy(), target, id)
         now_grads = tape.gradient(loss_value, self.model.trainable_weights)
         flat_now_grad = tf.concat([tf.reshape(grad, [-1]) for grad in now_grads], 0)
 
@@ -383,7 +408,7 @@ class ContinualDL(OnlineDL):
 
 class IncrementalDL(OnlineDL):
 
-    def __init__(self, model_name, online_method,framework,repo_addr):
+    def __init__(self, model_name, online_method,framework,repo_addr, result_addr):
         """
         :param model_name:
         :param online_method:
@@ -391,13 +416,17 @@ class IncrementalDL(OnlineDL):
         :param repo_addr: repo address
         """
 
-        super(IncrementalDL, self).__init__(model_name, online_method, framework, repo_addr)
+        super(IncrementalDL, self).__init__(model_name, online_method, framework, repo_addr, result_addr)
         pass
 
-    def consume(self, x, y, epoch):
+    def consume(self, x, y, id, epoch):
         x = x.reshape(self.batch_input_shape)
+        pred = self.model.predict(x)
         history = self.model.fit(x, y, batch_size=len(x), epochs=epoch, shuffle=False, verbose=0)
-        return history.history['loss'][0]
+        self._loss = history.history['loss'][-1] # history.history['loss'] is [loss_epoch0, loss_epoch1, ... loss_epochN] and we want final loss_epochN
+        self._send_result(pred, y, id)
+        return self._loss
+
 
     # profiling procedure is implemented at once when calling __init__ function.
     def profile(self):
