@@ -24,6 +24,7 @@ if __name__ == '__main__':
         else:
             is_schedule = False
     model_repo_addr = os.environ['MODEL_REPO_ADDR']
+    mongo_result_addr = os.environ['RESULT_ADDR']
 
     cep_id = os.environ['CEP_ID']
     kafka_bk = os.environ['KAFKA_BK']
@@ -40,7 +41,8 @@ if __name__ == '__main__':
         trainer = IncrementalDL(model_name=model_name,
                                 online_method=online_method,
                                 framework=framework,
-                                repo_addr=model_repo_addr)
+                                repo_addr=model_repo_addr,
+                                result_addr=mongo_result_addr)
         beta, beta1 = trainer.profile()
         strstub = IncStreamDLStub(kafka_bk=kafka_bk,
                                   cep_id=cep_id,
@@ -53,8 +55,8 @@ if __name__ == '__main__':
         strstub.set_beta_for_incremental(beta, beta1)
         test_error = 0.3 # from seong-hwan's origin code.
         while True:
-            x_batch, y_batch, scailed_epoch = strstub.batch_train_generator(test_error)
-            test_error = trainer.consume(x_batch, y_batch, scailed_epoch)
+            x_batch, y_batch, id_batch, scailed_epoch = strstub.batch_train_generator(test_error)
+            test_error = trainer.consume(x_batch, y_batch, id_batch, scailed_epoch)
             if save_weights:
                 trainer.save()
 
@@ -66,7 +68,8 @@ if __name__ == '__main__':
                               num_ami=num_ami,
                               episodic_mem_size=episodic_mem_size,
                               is_schedule=is_schedule,
-                              repo_addr=model_repo_addr)
+                              repo_addr=model_repo_addr,
+                              result_addr=mongo_result_addr)
         strstub = StreamDLStub(kafka_bk=kafka_bk,
                                cep_id=cep_id,
                                stream_bk=stream_bk,
