@@ -24,6 +24,7 @@ $ docker run \
         -e EPISODIC_MEM_SIZE=100 \
         -e IS_SCHEDULE=true \
         -e MODEL_REPO_ADDR={repoaddr:port} \
+        -e RESULT_ADDR={resultaddr:port} \
         -e CEP_ID=cep_test \
         -e KAFKA_BK={kafkanode0:portnum},... \
         -e STREAM_BK={kafkanode0},... #  나중에 지우면 됩니다.
@@ -48,6 +49,7 @@ $ docker run \
         -e EPISODIC_MEM_SIZE={number}
         -e IS_SCHEDULE=false or true
         -e MODEL_REPO_ADDR={address:port}
+        -e RESULT_ADDR={resultaddr:port}
         -e CEP_ID={cep id from stream-parser}
         -e KAFKA_BK={address:port, ...}
         -e STREAM_BK={address, ...} # 나중에 지우면 됩니다.
@@ -68,6 +70,7 @@ $ docker run \
         -e ONLINE_METHOD=cont
         -e MEM_METHOD=ringbuffer
         -e MODEL_REPO_ADDR={address:port}
+        -e RESULT_ADDR={resultaddr:port}
         -e KAFKA_BK={address:port, ...}
         -e STREAM_BK={address, ...} # 나중에 지우면 됩니다.
         -e BATCH_SIZE={number}
@@ -86,6 +89,7 @@ $ docker run \
         -e MODEL_NAME={defined name by you}
         -e ONLINE_METHOD=inc
         -e MODEL_REPO_ADDR={address:port}
+        -e RESULT_ADDR={resultaddr:port}
         -e CEP_ID={cep id from stream-parser}
         -e KAFKA_BK={address:port, ...}
         -e STREAM_BK={address, ...} # 나중에 지우면 됩니다.
