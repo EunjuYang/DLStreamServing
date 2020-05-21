@@ -1,4 +1,6 @@
 FROM ubuntu:16.04
+ARG MIRROR="-i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com"
+
 # for both incremental and continual
 ARG MODEL_NAME
 ARG ONLINE_METHOD
@@ -41,11 +43,12 @@ RUN apt-get install -y git
 RUN python3.6 -m pip install pip --upgrade
 RUN python3.6 -m pip install wheel
 RUN python3.6 -m pip install setuptools --upgrade
-RUN python3.6 -m pip install tensorflow==2.1.0 -i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com
+RUN python3.6 -m pip install tensorflow==2.1.0 $MIRROR
 RUN python3.6 -m pip install quadprog
 RUN python3.6 -m pip install scikit-learn
-RUN python3.6 -m pip install confluent-kafka -i http://mirror.kakao.com/pypi/simple --trusted-host mirror.kakao.com
+RUN python3.6 -m pip install confluent-kafka $MIRROR
 RUN python3.6 -m pip install kafka
+RUN python3.6 -m pip install pymongo $MIRRORa
 
 #RUN git clone https://github.com/EunjuYang/DLStreamServing.git
 RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
