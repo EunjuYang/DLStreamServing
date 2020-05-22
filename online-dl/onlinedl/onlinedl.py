@@ -112,10 +112,10 @@ class cossimMemory(inMemory):
         for enum, id in enumerate(u):
             id = self.id_to_idx[id]
             tmp_np = np.concatenate(
-                (self.memory_data[id, :self.memcnt[id]], x[argindex][bsz_list[enum]:bsz_list[enum + 1]]))
+                (self.memory_data[id, :self.memcnt[id]], x[argindex].reshape((-1,)+x.shape[1:])[bsz_list[enum]:bsz_list[enum + 1]]))
             if tmp_np.shape[0] != 1:
                 tmp_np_y = np.concatenate(
-                    (self.memory_target[id, :self.memcnt[id]], y[argindex][bsz_list[enum]:bsz_list[enum + 1]]))
+                    (self.memory_target[id, :self.memcnt[id]], y[argindex].reshape((-1,)+y.shape[1:])[bsz_list[enum]:bsz_list[enum + 1]]))
                 cossim_results = cosine_similarity(tmp_np.reshape((tmp_np.shape[0], -1)),
                                                    self.given_criteria.reshape(1, -1))
                 cossim_results = cossim_results.reshape(-1)
@@ -151,10 +151,10 @@ class cossimMemory(inMemory):
         for enum, id in enumerate(u):
             id = self.id_to_idx[id]
             tmp_np = np.concatenate(
-                (self.memory_data[id, :self.memcnt[id]], x[argindex][bsz_list[enum]:bsz_list[enum + 1]]))
+                (self.memory_data[id, :self.memcnt[id]], x[argindex].reshape((-1,)+x.shape[1:])[bsz_list[enum]:bsz_list[enum + 1]]))
             if tmp_np.shape[0] != 1:
                 tmp_np_y = np.concatenate(
-                    (self.memory_target[id, :self.memcnt[id]], y[argindex][bsz_list[enum]:bsz_list[enum + 1]]))
+                    (self.memory_target[id, :self.memcnt[id]], y[argindex].reshape((-1,)+y.shape[1:])[bsz_list[enum]:bsz_list[enum + 1]]))
                 cossim_results = cosine_similarity(tmp_np.reshape((tmp_np.shape[0], -1)),
                                                    self.given_criteria.reshape(1, -1))
                 cossim_results = cossim_results.reshape(-1)
@@ -274,12 +274,13 @@ class OnlineDL:
                 return target.weighted_matrics
 
     def _send_result(self, pred, true, id):
+        print('hi')
         #TODO: send result to result-repo using mongodb
         for i in np.unique(id):
             post = {}
             post['amiid'] = i.item()
-            post['pred'] = pred[np.where(id==i)].tolist() # shape is (batch,)
-            post['true'] = true[np.where(id==i)].tolist() # shape is (batch,)
+            post['pred'] = pred.reshape((pred.shape[0],))[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
+            post['true'] = true.reshape((true.shape[0],))[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
             post['loss'] = self._loss.item()
             post['timestamp'] = time.time() # time.time() is global UTC value
             self.collection.insert_one(post)

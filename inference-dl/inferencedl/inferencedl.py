@@ -40,7 +40,7 @@ class InferenceDL:
         for i in np.unique(id):
             post = {}
             post['amiid'] = i.item()
-            post['pred'] = result[np.where(id==i)].tolist() # shape is (batch,)
-            post['true'] = data[np.where(id==i)].tolist() # shape is (batch,)
+            post['pred'] = result[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
+            post['true'] = data[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
             post['timestamp'] = time.time() # time.time() is global UTC value
             self.collection.insert_one(post)

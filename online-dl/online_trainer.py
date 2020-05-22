@@ -14,13 +14,13 @@ if __name__ == '__main__':
     model_name = os.environ['MODEL_NAME']
     online_method = os.environ['ONLINE_METHOD']
     framework = os.environ['FRAMEWORK'] # 현재 keras 만 사용중
-    save_weights = bool(os.environ['SAVEWEIGHT'])
+    save_weights = os.environ['SAVEWEIGHT'].lower() == 'true'
     if online_method == 'cont':
         mem_method = os.environ['MEM_METHOD'] # ringbuffer or cossim
         num_ami = int(os.environ['NUM_AMI']) # There is no default value. So it is required.
         episodic_mem_size = int(os.environ['EPISODIC_MEM_SIZE'])
         if mem_method == 'cossim':
-            is_schedule = bool(os.environ['IS_SCHEDULE'])
+            is_schedule = os.environ['IS_SCHEDULE'].lower() == 'true'
         else:
             is_schedule = False
     model_repo_addr = os.environ['MODEL_REPO_ADDR']
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     lf_size = int(os.environ['LF_SIZE'])
     prefix = os.environ['PREFIX']
 
-    is_adaptive = bool(os.environ['IS_ADAPTIVE']) # optional for ContinualDL, Not used for Incremental
+    is_adaptive = os.environ['IS_ADAPTIVE'].lower() == 'true' # optional for ContinualDL, Not used for Incremental
 
     if online_method == 'inc':
         trainer = IncrementalDL(model_name=model_name,
@@ -57,8 +57,9 @@ if __name__ == '__main__':
         while True:
             x_batch, y_batch, id_batch, scailed_epoch = strstub.batch_train_generator(test_error)
             test_error = trainer.consume(x_batch, y_batch, id_batch, scailed_epoch)
-            if save_weights:
-                trainer.save()
+            # TODO: save_weights or model itself to model_repository
+            # if save_weights:
+            #     trainer.save()
 
     elif online_method == 'cont':
         trainer = ContinualDL(model_name=model_name,
@@ -83,8 +84,9 @@ if __name__ == '__main__':
         while True:
             _, x_batch, y_batch, id_batch = next(stream_generator)
             trainer.consume(x_batch, y_batch, id_batch)
-            if save_weights:
-                trainer.save()
+            #TODO: save_weights or model itself to model_repository
+            # if save_weights:
+            #     trainer.save()
 
     else:
         raise ValueError('ONLINE_METHOD value is wrong. (only support "inc" and "cont")')
