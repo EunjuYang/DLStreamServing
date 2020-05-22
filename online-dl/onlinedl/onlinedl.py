@@ -112,10 +112,10 @@ class cossimMemory(inMemory):
         for enum, id in enumerate(u):
             id = self.id_to_idx[id]
             tmp_np = np.concatenate(
-                (self.memory_data[id, :self.memcnt[id]], x[argindex][bsz_list[enum]:bsz_list[enum + 1]]))
+                (self.memory_data[id, :self.memcnt[id]], x[argindex].reshape((-1,)+x.shape[1:])[bsz_list[enum]:bsz_list[enum + 1]]))
             if tmp_np.shape[0] != 1:
                 tmp_np_y = np.concatenate(
-                    (self.memory_target[id, :self.memcnt[id]], y[argindex][bsz_list[enum]:bsz_list[enum + 1]]))
+                    (self.memory_target[id, :self.memcnt[id]], y[argindex].reshape((-1,)+y.shape[1:])[bsz_list[enum]:bsz_list[enum + 1]]))
                 cossim_results = cosine_similarity(tmp_np.reshape((tmp_np.shape[0], -1)),
                                                    self.given_criteria.reshape(1, -1))
                 cossim_results = cossim_results.reshape(-1)
@@ -151,10 +151,10 @@ class cossimMemory(inMemory):
         for enum, id in enumerate(u):
             id = self.id_to_idx[id]
             tmp_np = np.concatenate(
-                (self.memory_data[id, :self.memcnt[id]], x[argindex][bsz_list[enum]:bsz_list[enum + 1]]))
+                (self.memory_data[id, :self.memcnt[id]], x[argindex].reshape((-1,)+x.shape[1:])[bsz_list[enum]:bsz_list[enum + 1]]))
             if tmp_np.shape[0] != 1:
                 tmp_np_y = np.concatenate(
-                    (self.memory_target[id, :self.memcnt[id]], y[argindex][bsz_list[enum]:bsz_list[enum + 1]]))
+                    (self.memory_target[id, :self.memcnt[id]], y[argindex].reshape((-1,)+y.shape[1:])[bsz_list[enum]:bsz_list[enum + 1]]))
                 cossim_results = cosine_similarity(tmp_np.reshape((tmp_np.shape[0], -1)),
                                                    self.given_criteria.reshape(1, -1))
                 cossim_results = cossim_results.reshape(-1)
@@ -320,7 +320,6 @@ class ContinualDL(OnlineDL):
             self.consume = self._consume
 
     def _consume(self, data, target, id):
-
 
         data = data.reshape(self.batch_input_shape)
         x = tf.cast(data, tf.float32)
