@@ -44,3 +44,10 @@ class InferenceDL:
             post['true'] = data[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
             post['timestamp'] = time.time() # time.time() is global UTC value
             self.collection.insert_one(post)
+
+            # TODO (CH)
+            # model update call 하는 policy
+            # (Tuple; Bool, Timestamp(formatted time stamp string)) self.model_manager.download_model(save_path)
+            # if self.model_manager.download_model(save_path):
+            #   self.model = tf.keras.models.load_model(self.model_path)
+            # TODO, 그... mongodb에 업데이트된거 적어주는거? 이거는 어디서 할지는 너가 알아서 지환오빠랑 상의해서

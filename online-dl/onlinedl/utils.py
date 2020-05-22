@@ -11,14 +11,17 @@ class ModelManager:
         self.stub = chunk_pb2_grpc.FileServerStub(channel)
         self.model_name = model_name
 
-    def upload_model(self, file_path, model_name):
+    def upload_model(self, file_path, model_name, loss):
         """
         client library to upload model file
         :param file_path: file path to upload
         :param model_name: name of model
+        :param loss: loss of update model
         :return:
         """
-        chunks_generator = get_file_chunks(file_path, model_name)
+
+        # TODO (EJ)--> Add loss information in chunk
+        chunks_generator = self._get_file_chunks(file_path, model_name)
         response = self.stub.upload_model(chunks_generator)
         assert response.length == os.path.getsize(file_path)
 

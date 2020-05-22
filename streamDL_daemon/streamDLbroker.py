@@ -188,7 +188,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         if is_online_train:
             name = "online-%s-train" % (model_name)
             cep_id = sp_train_dst
-            self._create_online_trainer(name, model_name, online_param, cep_id, num_amis)
+            self._create_online_trainer(name, model_name, online_param, cep_id, num_amis, input_fmt)
             online_names.append(name)
             self.Manager[model_name].set_online_train_info(online_names)
 
@@ -257,7 +257,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         response = self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)
 
 
-    def _create_online_trainer(self, name, model_name, online_param, cep_id, num_amis):
+    def _create_online_trainer(self, name, model_name, online_param, cep_id, num_amis, input_format_dict):
 
         img = "dlstream/onlinedl:v01"
         label = name
@@ -278,8 +278,13 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             "KAFKA_BK": self.KAFKA_BK,
             "BATCH_SIZE": str(online_param["batch_size"]),
             "DTYPE": "float32",
-            "IS_ADAPTIVE": "False"
+            "IS_ADAPTIVE": "False",
+            "LB_SIZE":str(input_format_dict['look_back_win_size']),
+            "LF_SIZE":str(input_format_dict['look_forward_win_size']),
+            "PREFIX": "dlstream.ami",
+            "RESULT_ADDR": self.ResultRepo['svc_addr']
         }
+        # TODO : prefix 변수로 처리하기
 
         self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)
 
