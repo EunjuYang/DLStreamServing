@@ -14,7 +14,7 @@ if __name__ == '__main__':
     model_name = os.environ['MODEL_NAME']
     online_method = os.environ['ONLINE_METHOD']
     framework = os.environ['FRAMEWORK'] # 현재 keras 만 사용중
-    save_weights = bool(os.environ['SAVEWEIGHT'])
+    save_weights = os.environ['SAVEWEIGHT'].lower() == 'true'
     if online_method == 'cont':
         mem_method = os.environ['MEM_METHOD'] # ringbuffer or cossim
         num_ami = int(os.environ['NUM_AMI']) # There is no default value. So it is required.

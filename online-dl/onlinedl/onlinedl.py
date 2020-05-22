@@ -274,12 +274,13 @@ class OnlineDL:
                 return target.weighted_matrics
 
     def _send_result(self, pred, true, id):
+        print('hi')
         #TODO: send result to result-repo using mongodb
         for i in np.unique(id):
             post = {}
             post['amiid'] = i.item()
-            post['pred'] = pred[np.where(id==i)].tolist() # shape is (batch,)
-            post['true'] = true[np.where(id==i)].tolist() # shape is (batch,)
+            post['pred'] = pred.reshape((pred.shape[0],))[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
+            post['true'] = true.reshape((true.shape[0],))[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
             post['loss'] = self._loss.item()
             post['timestamp'] = time.time() # time.time() is global UTC value
             self.collection.insert_one(post)
@@ -319,6 +320,7 @@ class ContinualDL(OnlineDL):
             self.consume = self._consume
 
     def _consume(self, data, target, id):
+
 
         data = data.reshape(self.batch_input_shape)
         x = tf.cast(data, tf.float32)
