@@ -84,9 +84,11 @@ if __name__ == '__main__':
         while True:
             _, x_batch, y_batch, id_batch = next(stream_generator)
             trainer.consume(x_batch, y_batch, id_batch)
-            #TODO: save_weights or model itself to model_repository
+            #TODO: save_weights or model itself to model_repository (CH)
             # if save_weights:
-            #     trainer.save()
+            # if ~ loss comparison
+            #     save_path = trainer.save()
+            #     self.Manager.upload_model(save_path)
 
     else:
         raise ValueError('ONLINE_METHOD value is wrong. (only support "inc" and "cont")')

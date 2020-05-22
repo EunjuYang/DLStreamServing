@@ -87,10 +87,14 @@ class ModelServer(chunk_pb2_grpc.FileServerServicer):
                 self.manager = manager
 
             def upload_model(self, request_iterator, context):
+                # TODO (EJ)
+                # loss  정보
                 filename = self._save_file(request_iterator)
                 return chunk_pb2.Reply(length=os.path.getsize(filename))
 
             def download_model(self, request, context):
+                # TODO (EJ)
+                # download 시킬지말지 확인하는거,
                 model_name = request.name
                 model = self.manager.get(model_name)
                 if model is None:
