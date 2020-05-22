@@ -48,7 +48,7 @@ RUN python3.6 -m pip install quadprog
 RUN python3.6 -m pip install scikit-learn
 RUN python3.6 -m pip install confluent-kafka $MIRROR
 RUN python3.6 -m pip install kafka
-RUN python3.6 -m pip install pymongo $MIRRORa
+RUN python3.6 -m pip install pymongo $MIRROR
 
 #RUN git clone https://github.com/EunjuYang/DLStreamServing.git
 RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
