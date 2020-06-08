@@ -82,6 +82,10 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
     def get_deployed_model_with_name(self, request, context):
 
         if self._is_duplicate_model(request.name):
+
+            response = self.modelrepo_client.get_model_info(request.name)
+            self.Manager[request.name].set_loss(response.loss)
+            self.Manager[request.name].set_update_time(response.update_time)
             return self.Manager[request.name].get_model_instance()
 
 

@@ -88,7 +88,7 @@ if __name__ == '__main__':
             # if save_weights:
             # if ~ loss comparison
             #     save_path = trainer.save()
-            #     self.Manager.upload_model(save_path)
+            #     self.Manager.upload_model(save_path, loss)
 
     else:
         raise ValueError('ONLINE_METHOD value is wrong. (only support "inc" and "cont")')

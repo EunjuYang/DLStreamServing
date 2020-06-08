@@ -77,14 +77,13 @@ class Client:
                 if len(piece) == 0:
                     return
 
-                deployed_time = datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')
                 yield streamDL_pb2.Model(name=model_name,
                                            amis=amis,
                                            buffer=piece,
                                            is_online_train=is_online_train,
                                            input_fmt=input_fmt,
-                                           update_time=deployed_time,
-                                           create_time=deployed_time,
+                                           update_time=str(time.time()),
+                                           create_time=str(time.time()),
                                            UUID=model_name,
                                            online_param=online_parameter)
 
@@ -102,28 +101,28 @@ def print_stream_list(stream_list):
 
 def print_model_list(model_list):
 
-    print('+--------------+-------------------------------------+-------+--------------------+')
-    print('|     Name     |             Streams                 | Train |    Deployed At     |')
-    print('+--------------+-------------------------------------+-------+--------------------+')
+    print('+--------------+-------------------------------------+-------+-----------------+-----------------+--------+')
+    print('|     Name     |             Streams                 | Train |   Deployed At   |    Updated At   |  loss  |')
+    print('+--------------+-------------------------------------+-------+-----------------+-----------------+--------+')
 
     for model in model_list.model:
         stream_list = (','.join(model.amis.ami_id))
-        #deployed_time = datetime.fromtimestamp(float(model.create_time)).strftime('%Y-%m-%d %H:%M')
-        deployed_time = model.create_time
-        print('|%s|%s|%s|%s|' %(model.name.center(14), stream_list.center(37), str(model.is_online_train).center(7), str(deployed_time).center(20)))
-    print('+--------------+-------------------------------------+-------+--------------------+')
+        updated_time = datetime.fromtimestamp(float(model.create_time)).strftime('%Y-%m-%d %H:%M')
+        deployed_time = datetime.fromtimestamp(float(model.update_time)).strftime('%Y-%m-%d %H:%M')
+        print('|%s|%s|%s|%s|%s|%s|' %(model.name.center(14), stream_list.center(37), str(model.is_online_train).center(7), str(deployed_time).center(17), str(updated_time).center(17), str(model.loss).center(8)))
+    print('+--------------+-------------------------------------+-------+-----------------+-----------------+--------+')
 
 def describe_model(model):
 
-    print('+--------------+-------------------------------------+-------+--------------------+')
-    print('|     Name     |             Streams                 | Train |      Deployed At   |')
-    print('+--------------+-------------------------------------+-------+--------------------+')
+    print('+--------------+-------------------------------------+-------+-----------------+-----------------+--------+')
+    print('|     Name     |             Streams                 | Train |   Deployed At   |    Updated At   |  loss  |')
+    print('+--------------+-------------------------------------+-------+-----------------+-----------------+--------+')
 
     stream_list = (','.join(model.amis.ami_id))
-    #deployed_time = datetime.fromtimestamp(float(model.create_time)).strftime('%Y-%m-%d %H:%M')
-    deployed_time = model.create_time
-    print('|%s|%s|%s|%s|' %(model.name.center(14), stream_list.center(37), str(model.is_online_train).center(7), str(deployed_time).center(20)))
-    print('+--------------+-------------------------------------+-------+-----------------+')
+    updated_time = datetime.fromtimestamp(float(model.create_time)).strftime('%Y-%m-%d %H:%M')
+    deployed_time = datetime.fromtimestamp(float(model.create_time)).strftime('%Y-%m-%d %H:%M')
+    print('|%s|%s|%s|%s|%s|%s|' % (model.name.center(14), stream_list.center(37), str(model.is_online_train).center(7), str(deployed_time).center(17),str(updated_time).center(17), str(model.loss).center(8)))
+    print('+--------------+-------------------------------------+-------+-----------------+-----------------+--------+')
     print('+ Input Format +')
     print(model.input_fmt)
     if model.is_online_train:
@@ -188,6 +187,7 @@ if __name__ == '__main__':
     if args.mode == 'get':
         if args.streams:
             stream_list = client.get_ami_list()
+            print(stream_list)
             print_stream_list(stream_list)
         if args.models:
             model_list = client.get_deployed_model()
@@ -204,6 +204,7 @@ if __name__ == '__main__':
 
         if args.model_name is None:
             print("[Error] Please pass the model name with argument --model_name")
+            exit()
 
         model = client.get_deployed_model_with_name(args.model_name)
         describe_model(model)

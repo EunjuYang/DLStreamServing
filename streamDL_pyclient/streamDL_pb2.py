@@ -18,7 +18,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='streamDL',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x0estreamDL.proto\x12\x08streamDL\"\x17\n\x05\x43hunk\x12\x0e\n\x06\x62uffer\x18\x01 \x01(\x0c\"\x19\n\tModelName\x12\x0c\n\x04name\x18\x01 \x01(\t\"+\n\tModelList\x12\x1e\n\x05model\x18\x01 \x03(\x0b\x32\x0f.streamDL.Model\"\xeb\x01\n\x05Model\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1f\n\x04\x61mis\x18\x02 \x01(\x0b\x32\x11.streamDL.AMIList\x12\x0e\n\x06\x62uffer\x18\x03 \x01(\x0c\x12%\n\tinput_fmt\x18\x04 \x01(\x0b\x32\x12.streamDL.InputFmt\x12\x17\n\x0fis_online_train\x18\x05 \x01(\x08\x12\x13\n\x0bupdate_time\x18\x06 \x01(\t\x12\x13\n\x0b\x63reate_time\x18\x07 \x01(\t\x12\x0c\n\x04UUID\x18\x08 \x01(\t\x12+\n\x0conline_param\x18\t \x01(\x0b\x32\x15.streamDL.onlineParam\"W\n\tModelInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rstream_inputs\x18\x02 \x03(\t\x12%\n\tinput_fmt\x18\x03 \x01(\x0b\x32\x12.streamDL.InputFmt\"\x19\n\x07\x41MIList\x12\x0e\n\x06\x61mi_id\x18\x01 \x03(\t\"\x7f\n\x0bonlineParam\x12\x15\n\ronline_method\x18\x01 \x01(\t\x12\x12\n\nbatch_size\x18\x02 \x01(\x05\x12\x15\n\rmemory_method\x18\x03 \x01(\t\x12\x19\n\x11\x65pisodic_mem_size\x18\x04 \x01(\x05\x12\x13\n\x0bis_schedule\x18\x05 \x01(\x08\"z\n\x08InputFmt\x12\x1a\n\x12look_back_win_size\x18\x01 \x01(\x05\x12\x18\n\x10input_shift_step\x18\x02 \x01(\x05\x12\x19\n\x11look_forward_step\x18\x03 \x01(\x05\x12\x1d\n\x15look_forward_win_size\x18\x04 \x01(\x05\"(\n\x05Reply\x12\x0e\n\x06status\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x06\n\x04null2\xb5\x04\n\x0estreamDLbroker\x12\x38\n\x10set_deploy_model\x12\x0f.streamDL.Model\x1a\x0f.streamDL.Reply\"\x00(\x01\x12;\n\x12get_deployed_model\x12\x0e.streamDL.null\x1a\x13.streamDL.ModelList\"\x00\x12;\n\x11is_deployed_model\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Reply\"\x00\x12\x33\n\x0cget_ami_list\x12\x0e.streamDL.null\x1a\x11.streamDL.AMIList\"\x00\x12>\n\x14restart_online_train\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Reply\"\x00\x12;\n\x11stop_online_train\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Reply\"\x00\x12\x39\n\x0fstop_deployment\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Reply\"\x00\x12\x46\n\x1cget_deployed_model_with_name\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Model\"\x00\x12:\n\x0e\x64ownload_model\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Chunk\"\x00\x30\x01\x62\x06proto3'
+  serialized_pb=b'\n\x0estreamDL.proto\x12\x08streamDL\"\x17\n\x05\x43hunk\x12\x0e\n\x06\x62uffer\x18\x01 \x01(\x0c\"\x19\n\tModelName\x12\x0c\n\x04name\x18\x01 \x01(\t\"+\n\tModelList\x12\x1e\n\x05model\x18\x01 \x03(\x0b\x32\x0f.streamDL.Model\"\xf9\x01\n\x05Model\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1f\n\x04\x61mis\x18\x02 \x01(\x0b\x32\x11.streamDL.AMIList\x12\x0e\n\x06\x62uffer\x18\x03 \x01(\x0c\x12%\n\tinput_fmt\x18\x04 \x01(\x0b\x32\x12.streamDL.InputFmt\x12\x17\n\x0fis_online_train\x18\x05 \x01(\x08\x12\x13\n\x0bupdate_time\x18\x06 \x01(\t\x12\x13\n\x0b\x63reate_time\x18\x07 \x01(\t\x12\x0c\n\x04UUID\x18\x08 \x01(\t\x12+\n\x0conline_param\x18\t \x01(\x0b\x32\x15.streamDL.onlineParam\x12\x0c\n\x04loss\x18\n \x01(\x02\"W\n\tModelInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rstream_inputs\x18\x02 \x03(\t\x12%\n\tinput_fmt\x18\x03 \x01(\x0b\x32\x12.streamDL.InputFmt\"\x19\n\x07\x41MIList\x12\x0e\n\x06\x61mi_id\x18\x01 \x03(\t\"\x7f\n\x0bonlineParam\x12\x15\n\ronline_method\x18\x01 \x01(\t\x12\x12\n\nbatch_size\x18\x02 \x01(\x05\x12\x15\n\rmemory_method\x18\x03 \x01(\t\x12\x19\n\x11\x65pisodic_mem_size\x18\x04 \x01(\x05\x12\x13\n\x0bis_schedule\x18\x05 \x01(\x08\"z\n\x08InputFmt\x12\x1a\n\x12look_back_win_size\x18\x01 \x01(\x05\x12\x18\n\x10input_shift_step\x18\x02 \x01(\x05\x12\x19\n\x11look_forward_step\x18\x03 \x01(\x05\x12\x1d\n\x15look_forward_win_size\x18\x04 \x01(\x05\"(\n\x05Reply\x12\x0e\n\x06status\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x06\n\x04null2\xb5\x04\n\x0estreamDLbroker\x12\x38\n\x10set_deploy_model\x12\x0f.streamDL.Model\x1a\x0f.streamDL.Reply\"\x00(\x01\x12;\n\x12get_deployed_model\x12\x0e.streamDL.null\x1a\x13.streamDL.ModelList\"\x00\x12;\n\x11is_deployed_model\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Reply\"\x00\x12\x33\n\x0cget_ami_list\x12\x0e.streamDL.null\x1a\x11.streamDL.AMIList\"\x00\x12>\n\x14restart_online_train\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Reply\"\x00\x12;\n\x11stop_online_train\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Reply\"\x00\x12\x39\n\x0fstop_deployment\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Reply\"\x00\x12\x46\n\x1cget_deployed_model_with_name\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Model\"\x00\x12:\n\x0e\x64ownload_model\x12\x13.streamDL.ModelName\x1a\x0f.streamDL.Chunk\"\x00\x30\x01\x62\x06proto3'
 )
 
 
@@ -187,6 +187,13 @@ _MODEL = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='loss', full_name='streamDL.Model.loss', index=9,
+      number=10, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -200,7 +207,7 @@ _MODEL = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=126,
-  serialized_end=361,
+  serialized_end=375,
 )
 
 
@@ -244,8 +251,8 @@ _MODELINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=363,
-  serialized_end=450,
+  serialized_start=377,
+  serialized_end=464,
 )
 
 
@@ -275,8 +282,8 @@ _AMILIST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=452,
-  serialized_end=477,
+  serialized_start=466,
+  serialized_end=491,
 )
 
 
@@ -334,8 +341,8 @@ _ONLINEPARAM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=479,
-  serialized_end=606,
+  serialized_start=493,
+  serialized_end=620,
 )
 
 
@@ -386,8 +393,8 @@ _INPUTFMT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=608,
-  serialized_end=730,
+  serialized_start=622,
+  serialized_end=744,
 )
 
 
@@ -424,8 +431,8 @@ _REPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=732,
-  serialized_end=772,
+  serialized_start=746,
+  serialized_end=786,
 )
 
 
@@ -448,8 +455,8 @@ _NULL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=774,
-  serialized_end=780,
+  serialized_start=788,
+  serialized_end=794,
 )
 
 _MODELLIST.fields_by_name['model'].message_type = _MODEL
@@ -547,8 +554,8 @@ _STREAMDLBROKER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=783,
-  serialized_end=1348,
+  serialized_start=797,
+  serialized_end=1362,
   methods=[
   _descriptor.MethodDescriptor(
     name='set_deploy_model',

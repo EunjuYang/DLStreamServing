@@ -54,6 +54,7 @@ message Model{
     string create_time = 7;
     string UUID = 8;
     onlineParam online_param = 9;
+    float loss = 10;
 }
 
 message ModelInfo{
