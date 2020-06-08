@@ -12,7 +12,7 @@ RUN apt-get install -y git
 # update pip
 RUN python3.6 -m pip install pip --upgrade
 RUN python3.6 -m pip install wheel
-RUN sudo python3.6 -m pip install grpcio
+RUN python3.6 -m pip install grpcio
 RUN python3.6 -m pip install grpcio-tools
 
 RUN git clone https://$USERNAME:$PASSWORD@github.com/EunjuYang/DLStreamServing.git
