@@ -24,13 +24,13 @@ class ModelManager:
         response = self.stub.upload_model(chunks_generator)
         assert response.length == os.path.getsize(file_path)
 
-    def download_model(self, download_path, exist_loss=1000000):
+    def download_model(self, download_path, loss=1000000):
         """
         client library to download model file
         :param download_path: file path to save the file
         :return:
         """
-        response = self.stub.download_model(chunk_pb2.Request(name=self.model_name, loss=exist_loss))
+        response = self.stub.download_model(chunk_pb2.Request(name=self.model_name, loss=loss))
         if response == None:
             print("[Error] No model name with %s" %self.model_name)
             return False
