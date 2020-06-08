@@ -142,8 +142,8 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
 
         self.Manager[model_name] = dl_instance
 
-        # upload model file to modelrepo
-        self.modelrepo_client.upload_model(model_name, file_path)
+        # upload model file to modelrepo - initial deploy
+        self.modelrepo_client.upload_model(model_name, file_path, loss=1000.0)
 
         # create stream parser instances
         num_amis = len(amis)
