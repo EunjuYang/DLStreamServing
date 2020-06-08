@@ -49,14 +49,14 @@ class Client:
         response = self.stub.upload_model(chunks_generator)
         assert response.length == os.path.getsize(file_path)
 
-    def download_model(self, model_name, download_path):
+    def download_model(self, model_name, download_path, loss):
         """
         client library to download model file
         :param model_name: name of model which client wants to download
         :param download_path: file path to save the file
         :return:
         """
-        response = self.stub.download_model(chunk_pb2.Request(name=model_name))
+        response = self.stub.download_model(chunk_pb2.Request(name=model_name, loss=loss))
         if response == None:
             return False
         self.save_chunks_to_file(response, download_path)
@@ -87,17 +87,16 @@ class ModelServer(chunk_pb2_grpc.FileServerServicer):
                 self.manager = manager
 
             def upload_model(self, request_iterator, context):
-                # TODO (EJ)
-                # loss  정보
                 filename = self._save_file(request_iterator)
                 return chunk_pb2.Reply(length=os.path.getsize(filename))
 
             def download_model(self, request, context):
-                # TODO (EJ)
-                # download 시킬지말지 확인하는거,
                 model_name = request.name
                 model = self.manager.get(model_name)
                 if model is None:
+                    return chunk_pb2.Reply(None)
+                if request.loss < model.loss:
+                    # No return model.
                     return chunk_pb2.Reply(None)
                 return get_file_chunks(model.model_file, model_name)
 
@@ -121,10 +120,11 @@ class ModelServer(chunk_pb2_grpc.FileServerServicer):
                 chunk = next(chunks)
                 if chunk.name is not u'':
                     model_name = chunk.name
+                    model_loss = chunk.loss
                 else:
                     return None
 
-                file_path = self.manager.update_model(model_name=model_name, chunks=chunks)
+                file_path = self.manager.update_model(model_name=model_name, loss=model_loss, chunks=chunks)
                 return file_path
 
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=max_workers))

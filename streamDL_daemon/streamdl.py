@@ -3,7 +3,7 @@ import streamDL_pb2
 
 class streamDL:
 
-    def __init__(self, name, input_fmt, is_online_train, update_time, create_time, UUID, online_param, amis):
+    def __init__(self, name, input_fmt, is_online_train, update_time, create_time, UUID, online_param, amis, loss=0.0):
 
         self.name = name
         self.input_fmt= input_fmt
@@ -16,9 +16,16 @@ class streamDL:
         self.online_train_name_list = []
         self.amis = amis
         self.inferencedl_name_list = []
+        self.loss = loss
 
     def set_sp_info(self, sp_name_list):
         self.sp_name_list = sp_name_list
+
+    def set_update_time(self, update_time):
+        self.update_time = update_time
+
+    def set_loss(self, loss):
+        self.loss = loss
 
     def get_model_instance(self):
 
@@ -47,7 +54,8 @@ class streamDL:
                                   input_fmt=input_fmt,
                                   online_param=online_parameter,
                                   UUID=self.UUID,
-                                  update_time=self.update_time)
+                                  update_time=self.update_time,
+                                  loss=self.loss)
 
     def set_online_train_info(self, online_train_list):
         self.online_train_name_list = online_train_list

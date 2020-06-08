@@ -2,7 +2,7 @@ import time
 
 class Model:
 
-    def __init__(self, model_name, model_file, extension=".h5"):
+    def __init__(self, model_name, model_file, loss, extension=".h5"):
         """
         :param model_name: (string) model name
         :param param_file: (string) file path of param file
@@ -13,10 +13,7 @@ class Model:
         self.model_file = model_file
         self.num_push = 0
         self.last_update = time.time()
-        self.loss = 0
-
-        # TODO
-        self.loss = []
+        self.loss = loss
 
     def __str__(self):
         return self.model_name
@@ -43,7 +40,7 @@ class Manager:
         self.model_table = {}
         self.dir_prefix = dir_prefix
 
-    def create_new_model(self, model_name):
+    def create_new_model(self, model_name, init_loss):
         """
         Create a new model
         :param model_name: model name
@@ -56,7 +53,8 @@ class Manager:
 
         model_file = self.dir_prefix + model_name + ".h5"
         model = Model(model_name=model_name,
-                      model_file=model_file)
+                      model_file=model_file,
+                      loss=init_loss)
         self.model_table[model_name] = model
 
         return model
@@ -67,11 +65,11 @@ class Manager:
             return None
         return self.model_table[model_name]
 
-    def update_model(self, model_name, chunks):
+    def update_model(self, model_name, loss, chunks):
 
         model = self.get(model_name)
         if model is None:
-            model = self.create_new_model(model_name)
+            model = self.create_new_model(model_name, loss)
         if model is None:
             return None
 
@@ -79,7 +77,6 @@ class Manager:
         with open(file_path, 'wb') as f:
             for chunk in chunks:
                 f.write(chunk.buffer)
-            loss = chunk.loss
 
             model.flag_update(loss)
 
