@@ -19,7 +19,7 @@ if __name__ == '__main__':
     batch_size = int(float(os.environ['BATCH_SIZE']))
     _dtype = os.environ['DTYPE']
     lb_size = int(os.environ['LB_SIZE'])
-    lf_size = int(os.environ['LF_SIZE'])
+    lf_size = None
     prefix = os.environ['PREFIX']
 
     # Not yet determine to make InferenceDL
