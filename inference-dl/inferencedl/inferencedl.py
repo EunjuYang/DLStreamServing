@@ -19,7 +19,7 @@ class InferenceDL:
 
 
         self.model_manager.download_model(self.model_path)
-        self.save_path = "tmp/inference/%s" % (model_name)
+        self.save_path = "/tmp/inference/%s" % (model_name)
 
         self.model_filename = self.model_path.split('/')[-1]
         self.model = tf.keras.models.load_model(self.model_path)
