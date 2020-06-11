@@ -259,7 +259,7 @@ class OnlineDL:
         # self.model_uppath="/tmp/(model_name)_current"
         # self.model_upfilename="(model_name)_current"
         # self._loss=(float)value
-        self.model.save(self.model_uppath)
+        self.model.save(self.model_uppath, save_format='h5')
         self.model_manager.upload_model(self.model_uppath, self.model_upfilename, loss=self._loss)
 
     @staticmethod
