@@ -197,6 +197,8 @@ class OnlineDL:
         self.model_manager = ModelManager(repo_addr, model_name)
         self.model_path = "/tmp/%s_init" % model_name
         self.model_manager.download_model(self.model_path)
+        self.model_uppath = "/tmp/%s_current" % model_name # will be "(model_name)_current"
+        self.model_upfilename = self.model_uppath.split('/')[-1]
 
         self.model_filename = self.model_path.split('/')[-1]
         self.online_method = online_method
@@ -253,8 +255,11 @@ class OnlineDL:
                 raise OnlineDLError
 
     def save(self):
-        self.model.save(self.model_path)
-        self.model_manager.upload_model(self.model_filename,loss=self._loss) # start from initial model (i.e. 0-iteration)
+        # below parameter description
+        # self.model_uppath="/tmp/(model_name)_current"
+        # self.model_upfilename="(model_name)_current"
+        # self._loss=(float)value
+        self.model_manager.upload_model(self.model_uppath, self.model_upfilename, loss=self._loss)
 
     @staticmethod
     def _check_attribute_error(target, arg_name):

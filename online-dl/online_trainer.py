@@ -35,6 +35,8 @@ if __name__ == '__main__':
     lf_size = int(os.environ['LF_SIZE'])
     prefix = os.environ['PREFIX']
 
+    base_loss = 10000.0
+
     is_adaptive = os.environ['IS_ADAPTIVE'].lower() == 'true' # optional for ContinualDL, Not used for Incremental
 
     if online_method == 'inc':
@@ -53,13 +55,14 @@ if __name__ == '__main__':
                                   lf_size=lf_size,
                                   prefix=prefix)
         strstub.set_beta_for_incremental(beta, beta1)
-        test_error = 0.3 # from seong-hwan's origin code.
+        training_error = 0.3 # from seong-hwan's origin code.
         while True:
-            x_batch, y_batch, id_batch, scailed_epoch = strstub.batch_train_generator(test_error)
-            test_error = trainer.consume(x_batch, y_batch, id_batch, scailed_epoch)
-            # TODO: save_weights or model itself to model_repository
-            # if save_weights:
-            #     trainer.save()
+            x_batch, y_batch, id_batch, scailed_epoch = strstub.batch_train_generator(training_error)
+            training_error = trainer.consume(x_batch, y_batch, id_batch, scailed_epoch)
+            if save_weights:
+                if trainer._loss < base_loss * 0.1:
+                    base_loss = trainer._loss
+                    trainer.save()
 
     elif online_method == 'cont':
         trainer = ContinualDL(model_name=model_name,
@@ -85,10 +88,12 @@ if __name__ == '__main__':
             _, x_batch, y_batch, id_batch = next(stream_generator)
             trainer.consume(x_batch, y_batch, id_batch)
             #TODO: save_weights or model itself to model_repository (CH)
-            # if save_weights:
-            # if ~ loss comparison
-            #     save_path = trainer.save()
-            #     self.Manager.upload_model(save_path, loss)
+
+            if save_weights:
+                if trainer._loss < base_loss*0.1:
+                    base_loss = trainer._loss
+                    trainer.save()
+
 
     else:
         raise ValueError('ONLINE_METHOD value is wrong. (only support "inc" and "cont")')

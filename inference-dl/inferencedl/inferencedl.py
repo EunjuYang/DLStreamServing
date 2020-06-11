@@ -17,8 +17,10 @@ class InferenceDL:
         self.model_manager = ModelManager(repo_addr, model_name)
         self.model_path = "/tmp/inference/%s_init"%(model_name)
 
-        # I didn't test model_manage br yet. -Changha
+
         self.model_manager.download_model(self.model_path)
+        self.model_manager.model_name = "%s_current" %(model_name)
+        self.save_path = "tmp/inference/%s_current" % (model_name)
 
         self.model_filename = self.model_path.split('/')[-1]
         self.model = tf.keras.models.load_model(self.model_path)
@@ -30,6 +32,8 @@ class InferenceDL:
         self.collection = self.db[model_name]
         self.collection.remove({})
         self.model_name = model_name
+
+        self.transition_decision = 0.1
 
     # Below consume-function implement feedforward and send results to database (mongodb)
     def consume(self, data, id):
@@ -45,9 +49,15 @@ class InferenceDL:
             post['timestamp'] = time.time() # time.time() is global UTC value
             self.collection.insert_one(post)
 
-            # TODO (CH)
-            # model update call 하는 policy
-            # (Tuple; Bool, Timestamp(formatted time stamp string)) self.model_manager.download_model(save_path)
-            # if self.model_manager.download_model(save_path):
-            #   self.model = tf.keras.models.load_model(self.model_path)
-            # TODO, 그... mongodb에 업데이트된거 적어주는거? 이거는 어디서 할지는 너가 알아서 지환오빠랑 상의해서
+        if self.model_manager.download_model(self.save_path):
+            tmp_model = tf.keras.models.load_model(self.save_path)
+
+            _sum = 0.0
+            for w1, w2 in zip(tmp_model.get_weights(), self.model.get_weights()):
+                _sum += np.sum((w1 - w2) ** 2)
+
+            if _sum > self.transition_decision:
+                self.model = tmp_model
+                post['updated_at'] = time.time()
+                self.collection.insert_one(post)
+
