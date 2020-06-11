@@ -60,3 +60,4 @@ class InferenceDL:
                 self.model = tmp_model
                 post['updated_at'] = time.time()
                 self.collection.insert_one(post)
+
