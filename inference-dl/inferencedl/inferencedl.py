@@ -1,4 +1,4 @@
-import os, time
+import os, time, datetime
 import tensorflow as tf
 from onlinedl.utils import ModelManager
 from pymongo import MongoClient
@@ -45,7 +45,7 @@ class InferenceDL:
             post['amiid'] = i.item()
             post['pred'] = result[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
             post['true'] = data[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
-            post['timestamp'] = time.time() # time.time() is global UTC value
+            post['timestamp'] = datetime.datetime.now()
             self.collection.insert_one(post)
 
         if self.model_manager.download_model(self.save_path):
@@ -57,6 +57,6 @@ class InferenceDL:
 
             if _sum > self.transition_decision:
                 self.model = tmp_model
-                post['updated_at'] = time.time()
+                post['updated_at_inferencedl'] = datetime.datetime.now()
                 self.collection.insert_one(post)
 
