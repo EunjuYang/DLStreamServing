@@ -240,9 +240,7 @@ class OnlineDL:
                 _wm = self._check_attribute_error(model, 'wm')
                 _tt = self._check_attribute_error(model, 'tt')
 
-                self.model = Sequential()
-                for layer in model.layers:
-                    self.model.add(layer)
+                self.model = model
 
                 self.opt_fn = model.optimizer
                 self.loss_fn = model.loss_functions[0]
