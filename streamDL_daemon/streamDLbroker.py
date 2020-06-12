@@ -84,6 +84,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         if self._is_duplicate_model(request.name):
 
             response = self.modelrepo_client.get_model_info(request.name)
+            print(response)
             self.Manager[request.name].set_loss(response.loss)
             self.Manager[request.name].set_update_time(response.update_time)
             return self.Manager[request.name].get_model_instance()
@@ -143,7 +144,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         self.Manager[model_name] = dl_instance
 
         # upload model file to modelrepo - initial deploy
-        self.modelrepo_client.upload_model(model_name, file_path, loss=1000.0)
+        self.modelrepo_client.upload_model(model_name, file_path, loss=100.0)
 
         # create stream parser instances
         num_amis = len(amis)
@@ -183,7 +184,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         cep_id = sp_infer_dst
         # This should be updated
         batch_size = 3
-        self._create_inferencedl_instance(name=name, model_name=model_name, cep_id=cep_id, batch_size=batch_size)
+        self._create_inferencedl_instance(name=name, model_name=model_name, cep_id=cep_id, batch_size=batch_size, stream_prefix=self.Namespace+".ami", input_format_dict=input_fmt)
         inferencedl_names.append(name)
         self.Manager[model_name].set_inferencedl_info(inferencedl_names)
 
@@ -201,10 +202,22 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
 
         return streamDL_pb2.Reply(status=True)
 
+    def download_model(self, request, context):
+
+        download_path = '/tmp/streamdl/%s' % request.name
+        self.modelrepo_client.download_model(request.name, download_path, loss=10000)
+        print('complete to download model %d in %d' % (request.name, download_path))
+
     def get_deployed_model(self, request, context):
 
+        #
         model_list = streamDL_pb2.ModelList()
         for key in self.Manager.keys():
+            # update model info from model repo
+            response = self.modelrepo_client.get_model_info(key)
+            print(response)
+            self.Manager[key].set_loss(response.loss)
+            self.Manager[key].set_update_time(response.update_time)
             model_list.model.append(self.Manager[key].get_model_instance())
         return model_list
 
@@ -240,7 +253,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
 
         return True
 
-    def _create_inferencedl_instance(self, name, model_name, cep_id, batch_size):
+    def _create_inferencedl_instance(self, name, model_name, cep_id, batch_size, stream_prefix, input_format_dict):
 
         img = "dlstream/inferencedl:v01"
         label = str(name)
@@ -255,7 +268,10 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             "KAFKA_BK": str(self.KAFKA_BK),
             "STREAM_BK": "143.248.146.115:9092",
             "BATCH_SIZE": str(batch_size),
-            "DTYPE": "float32"
+            "DTYPE": "float32",
+            "PREFIX": stream_prefix,
+            "LB_SIZE": str(input_format_dict['look_back_win_size']),
+            "LF_SIZE": str(input_format_dict['look_forward_win_size'])
         }
 
         response = self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)

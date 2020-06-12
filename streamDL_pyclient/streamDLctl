@@ -50,6 +50,11 @@ class Client:
             print("    Error Message : %s" % response.message)
         return response.status
 
+    def download_model(self, name):
+
+        response = self.stub.download_model(streamDL_pb2.ModelName(name=name))
+        return
+
 
     def _deploy_generator(self, model_file, model_name, ami_list, input_format, is_online_train, online_param):
 
@@ -156,7 +161,7 @@ if __name__ == '__main__':
     parser.add_argument('--episodic_mem_size', type=int, required=False)
     parser.add_argument('--is_schedule', type=bool, required=False)
     args = parser.parse_args()
-    mode = ('deploy', 'delete', 'get', 'describe')
+    mode = ('deploy', 'delete', 'get', 'describe', 'download')
 
     if args.mode not in mode:
         print("* streamDL-serving * \n\n Usage Error. \n Please use help option to get information with -h, --help")
@@ -210,4 +215,12 @@ if __name__ == '__main__':
         describe_model(model)
 
 
+    if args.mode == 'download':
+
+        if args.model_name is None:
+            print("[Error] Please pass the model name with argument --model_name")
+            exit()
+
+        model = client.download_model(args.model_name)
+        describe_model(model)
 

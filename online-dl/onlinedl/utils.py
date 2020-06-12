@@ -24,7 +24,7 @@ class ModelManager:
         response = self.stub.upload_model(chunks_generator)
         assert response.length == os.path.getsize(file_path)
 
-    def download_model(self, download_path, loss=1000000):
+    def download_model(self, download_path, loss=10000):
         """
         client library to download model file
         :param download_path: file path to save the file

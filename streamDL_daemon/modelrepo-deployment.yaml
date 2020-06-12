@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: modelrepo
-          image: yejyang/model-repo:v01
+          image: dlstream/model-repo:v01
           ports:
             - containerPort: 8888
 ---

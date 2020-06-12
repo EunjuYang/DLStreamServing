@@ -33,6 +33,7 @@ def save_chunks_to_file(chunks, filename=None):
 
     return filename
 
+'''
 class Client:
     def __init__(self, address):
         channel = grpc.insecure_channel(address)
@@ -74,6 +75,7 @@ class Client:
         response = self.stub.get_model_info(chunk_pb2.Request(name=model_name))
         return response
 
+'''
 
 
 class ModelServer(chunk_pb2_grpc.FileServerServicer):
@@ -112,8 +114,6 @@ class ModelServer(chunk_pb2_grpc.FileServerServicer):
                                            update_time=model.get_last_update(),
                                            loss=model.get_loss(),
                                            status=True)
-
-
 
             def _save_file(self, chunks):
 
