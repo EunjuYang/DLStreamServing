@@ -32,8 +32,6 @@ class InferenceDL:
         self.collection.remove({})
         self.model_name = model_name
 
-        self.transition_decision = 0.1
-
     # Below consume-function implement feedforward and send results to database (mongodb)
     def consume(self, data, id):
         result = self.model.predict(data.reshape(self.batch_input_shape), batch_size=data.shape[0])
@@ -55,7 +53,7 @@ class InferenceDL:
             for w1, w2 in zip(tmp_model.get_weights(), self.model.get_weights()):
                 _sum += np.sum((w1 - w2) ** 2)
 
-            if _sum > self.transition_decision:
+            if _sum > 0.0:
                 self.model = tmp_model
                 post['updated_at_inferencedl'] = datetime.datetime.now()
                 self.collection.insert_one(post)
