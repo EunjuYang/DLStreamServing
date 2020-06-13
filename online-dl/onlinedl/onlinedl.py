@@ -1,4 +1,4 @@
-import os, time
+import os, time, datetime
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.models import Sequential
@@ -198,7 +198,6 @@ class OnlineDL:
         self.model_path = "/tmp/%s_init" % model_name
         self.model_manager.download_model(self.model_path)
         self.model_uppath = "/tmp/%s" % model_name # will be "(model_name)_current"
-        self.model_upfilename = self.model_uppath.split('/')[-1]
 
         self.model_filename = self.model_path.split('/')[-1]
         self.online_method = online_method
@@ -241,9 +240,7 @@ class OnlineDL:
                 _wm = self._check_attribute_error(model, 'wm')
                 _tt = self._check_attribute_error(model, 'tt')
 
-                self.model = Sequential()
-                for layer in model.layers:
-                    self.model.add(layer)
+                self.model = model
 
                 self.opt_fn = model.optimizer
                 self.loss_fn = model.loss_functions[0]
@@ -255,12 +252,11 @@ class OnlineDL:
                 raise OnlineDLError
 
     def save(self):
-        # below parameter description
-        # self.model_uppath="/tmp/(model_name)_current"
-        # self.model_upfilename="(model_name)_current"
-        # self._loss=(float)value
         self.model.save(self.model_uppath, save_format='h5')
-        self.model_manager.upload_model(self.model_uppath, self.model_upfilename, loss=self._loss)
+        self.model_manager.upload_model(self.model_uppath, self.model_name, loss=self._loss)
+        post = {}
+        post['update_at_onlinedl'] = datetime.datetime.now()
+        self.collection.insert_one(post)
 
     @staticmethod
     def _check_attribute_error(target, arg_name):
@@ -280,15 +276,13 @@ class OnlineDL:
                 return target.weighted_matrics
 
     def _send_result(self, pred, true, id):
-        print('hi')
-        #TODO: send result to result-repo using mongodb
         for i in np.unique(id):
             post = {}
             post['amiid'] = i.item()
             post['pred'] = pred.reshape((pred.shape[0],))[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
             post['true'] = true.reshape((true.shape[0],))[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
             post['loss'] = self._loss.item()
-            post['timestamp'] = time.time() # time.time() is global UTC value
+            post['timestamp'] = datetime.datetime.now()
             self.collection.insert_one(post)
 
 
