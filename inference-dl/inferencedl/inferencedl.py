@@ -55,6 +55,7 @@ class InferenceDL:
 
             if _sum > 0.0:
                 self.model = tmp_model
+                post = {}
                 post['updated_at_inferencedl'] = datetime.datetime.now()
                 self.collection.insert_one(post)
 
