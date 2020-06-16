@@ -60,9 +60,9 @@ if __name__ == '__main__':
             x_batch, y_batch, id_batch, scailed_epoch = strstub.batch_train_generator(training_error)
             training_error = trainer.consume(x_batch, y_batch, id_batch, scailed_epoch)
             if save_weights:
-                if trainer._loss < base_loss * 0.9:
+                if trainer._loss < base_loss * 0.999999:
+                    base_loss = trainer._loss
                     trainer.save()
-            base_loss = trainer._loss
 
     elif online_method == 'cont':
         trainer = ContinualDL(model_name=model_name,
@@ -89,9 +89,9 @@ if __name__ == '__main__':
             trainer.consume(x_batch, y_batch, id_batch)
 
             if save_weights:
-                if trainer._loss < base_loss*0.9:
+                if trainer._loss < base_loss*0.999999:
+                    base_loss = trainer._loss
                     trainer.save()
-            base_loss = trainer._loss
 
 
     else:
