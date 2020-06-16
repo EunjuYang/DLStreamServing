@@ -326,8 +326,6 @@ class ContinualDL(OnlineDL):
         with tf.GradientTape() as tape:
             pred = self.model(x)
             loss_value = self.loss_fn(target, pred)
-        self._loss = loss_value.numpy()
-        self._send_result(pred.numpy(), target, id)
         now_grads = tape.gradient(loss_value, self.model.trainable_weights)
         flat_now_grad = tf.concat([tf.reshape(grad, [-1]) for grad in now_grads], 0)
 
@@ -362,6 +360,8 @@ class ContinualDL(OnlineDL):
 
         self.opt_fn.apply_gradients(
             zip(self.projected_gradients, self.model.trainable_weights))
+        self._loss = self.loss_fn(target, self.model(x)).numpy()
+        self._send_result(pred.numpy(), target, id)
 
     def _compare_consume(self, data, target, id):
         data = data.reshape(self.batch_input_shape)
@@ -369,8 +369,6 @@ class ContinualDL(OnlineDL):
         with tf.GradientTape() as tape:
             pred = self.model(x)
             loss_value = self.loss_fn(target, pred)
-        self._loss = loss_value.numpy()
-        self._send_result(pred.numpy(), target, id)
         now_grads = tape.gradient(loss_value, self.model.trainable_weights)
         flat_now_grad = tf.concat([tf.reshape(grad, [-1]) for grad in now_grads], 0)
 
@@ -406,6 +404,8 @@ class ContinualDL(OnlineDL):
 
         self.opt_fn.apply_gradients(
             zip(self.projected_gradients, self.model.trainable_weights))
+        self._loss = self.loss_fn(target, self.model(x)).numpy()
+        self._send_result(pred.numpy(), target, id)
 
 class IncrementalDL(OnlineDL):
 
