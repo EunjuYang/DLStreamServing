@@ -40,20 +40,29 @@
       <div class="heading">
         <h1>AMI LIST</h1>
       </div>
-      <div class="cards" style="top: 35%">
+      <div class="cards" style="top: 26%">
         <div class="card">
           <div class="signup-form">
             <form id=ami_list_form>
               <div class="form-row">
                 <div class="form-group">
-                  <div class="form-input">
-                  <% for(var i=0; i < amis.length; i++) { %>
-                    <label><input type="checkbox" name="ami" id="ami" checked="checked" value=<%= amis[i]%> > <%= amis[i]%> </label>
-                  <% } %>
+                  <div class="col-md-6" >
+                    <% for(var i=0; i < amis.length; i++) { %>
+                    <div class="page">
+                      <div class="page__toggle">
+                        <label class="toggle">
+                          <input class="toggle__input" type="checkbox" name="ami" id=<%= amis[i]%> checked="checked" value=<%= amis[i]%> >
+                          <span class="toggle__label">
+                            <span class="toggle__text" style="font-size: 30px; margin-left: 10px;"><%= amis[i]%></span>
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                    <% } %>
                   </div>
                 </div>
               </div>
-              <div class="form-submit">
+              <div class="form-submit" style="margin-top: 100px">
                 <input type="button" class="submit" id="submit" name="submit" value="Select" onclick="setParentText()">
                 <input type="button" class="submit" id="reset" name="reset" value="Close" onclick="window.close()">
               </div>

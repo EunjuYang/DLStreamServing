@@ -6,9 +6,10 @@ var fs = require("fs");
 var multer = require("multer");
 var moment = require('moment');
 let grpc = require("grpc");
-var protoLoader = require("@grpc/proto-loader")
-var mongoose    = require('mongoose');
-
+var protoLoader = require("@grpc/proto-loader");
+var request = require("request");
+var mongoose = require('mongoose');
+//var Mongoose = require('mongoose').Mongoose;
 
 // express server setting
 app.set('views', __dirname + '/views');
@@ -42,15 +43,38 @@ const streamDLbroker = grpc.load(PROTO_PATH).streamDL.streamDLbroker
 const client = new streamDLbroker('143.248.148.131:50091', grpc.credentials.createInsecure())
 
 
-// mongoDB server connection
-mongoose.connect('mongodb://192.168.54.133:27017/inference', {useNewUrlParser: true});
+//var instanceTrain = new Mongoose();
+//var instanceInfer = new Mongoose();
 
-var db = mongoose.connection;
-db.on('error', console.error);
-db.once('open', function(){
+//instanceTrain.connect('mongodb://192.168.54.145:27017/onlinedl', {useNewUrlParser: true});
+//instanceInfer.connect('mongodb://192.168.54.145:27017/inference', {useNewUrlParser: true});
+
+var instanceTrain = mongoose.createConnection('mongodb://192.168.54.145:27017/onlinedl', {useNewUrlParser: true});
+var instanceInfer = mongoose.createConnection('mongodb://192.168.54.145:27017/inference', {useNewUrlParser: true});
+
+//var db1 = instanceTrain.connection;
+//db1.on('error', console.error);
+//db1.once('open', function(){
     // CONNECTED TO MONGODB SERVER
-    console.log("Connected to mongod server");
-});
+//    console.log("Connected to instanceTrain DB server");
+//});
+
+//var db2 = instanceInfer.connection;
+//db2.on('error', console.error);
+//db2.once('open', function(){
+    // CONNECTED TO MONGODB SERVER
+//    console.log("Connected to instanceInfer DB server");
+//});
+
+// mongoDB server connection
+//mongoose.connect('mongodb://192.168.54.133:27017/inference', {useNewUrlParser: true});
+
+//var db = mongoose.connection;
+//db.on('error', console.error);
+//db.once('open', function(){
+    // CONNECTED TO MONGODB SERVER
+//    console.log("Connected to mongod server");
+//});
 
 
 app.use(express.static('public'));
@@ -63,4 +87,5 @@ app.use(session({
     saveUninitialized: true
 }));
 
-var router = require('./router/main')(app, fs, upload, grpc, client, mongoose);
+//var router = require('./router/main')(app, fs, upload, grpc, client, request, mongoose);
+var router = require('./router/main')(app, fs, upload, grpc, client, request, mongoose, instanceTrain, instanceInfer);

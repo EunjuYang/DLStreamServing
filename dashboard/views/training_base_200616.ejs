@@ -29,17 +29,24 @@
 
     <section id="content-area">
       <div class="heading">
-        <h1 style="font-size: 40px;">Inference Result: <%= model.model_name %></h1>
+        <h1 style="font-size: 40px;">Deploy Model Name: <%= model.model_name %></h1>
       </div>
       <div class="cards">
         <div class="card">
-          <div id="Inference Result">
+          <div id="Training Result">
             <% for(var key in result) { %>
             <div class="col-md-full">
               <div class="card">
                 <h3>AMI ID: <%= key %></h3>
                 <div id="<%= key %>_update_time_text" style="display: inline; font-size: 18px;"></div>
                   <div id="<%= key %>" style="-ms-overflow-style:none; margin: 0px -40px 0px -20px;"></div>
+              </div>
+            </div>
+            <div class="col-md-full">
+              <div class="card">
+                <h3>AMI ID: <%= key %></h3>
+                <div id="<%= key %>_update_time_text_loss" style="display: inline; font-size: 18px;"></div>
+                  <div id="<%= key %>_loss" style="-ms-overflow-style:none; margin: 0px -40px 0px -20px;"></div>
               </div>
             </div>
             <% } %>
@@ -49,7 +56,6 @@
                 let pred_v = <%= JSON.stringify(result[key].pred_v) %>;
                 let true_v = <%= JSON.stringify(result[key].true_v) %>;
                 let time = <%- JSON.stringify(result[key].time) %>;
-                let updated_time = <%- JSON.stringify(updated_time) %>;
                 document.getElementById("<%= key %>_update_time_text").innerHTML = "Model Update Time: " + time[0];
 
                 let layout = {
@@ -78,16 +84,19 @@
                 };
 
                 Plotly.newPlot("<%= key %>", [{
+                  x: [],
                   y: [],
                   name: 'Prediction',
                   mode: 'lines',
                   line: {color: '#80CAF6'}
                 }, {
+                  x: [],
                   y: [],
                   mode: 'lines',
                   name: 'True',
                   line: {color: '#DF56F1'}
                 }, {
+                  x: [],
                   y: [],
                   mode: 'markers',
                   name: 'Update Time',
@@ -105,24 +114,104 @@
                       cnt = 1;
                     }
                     Plotly.extendTraces("<%= key %>", {
+                      x: [[time[cnt]], [time[cnt]], [time[cnt]]],
                       y: [[pred_v[cnt-1]], [true_v[cnt-1]], [0]]
                     }, [0, 1, 2])
                     document.getElementById("<%= key %>_update_time_text").innerHTML = "Model Update Time: " + time[cnt];
                   } else {
                     Plotly.extendTraces("<%= key %>", {
+                      x: [[time[cnt]], [time[cnt]], [time[cnt]]],
                       y: [[pred_v[cnt]], [true_v[cnt]], [-100]]
                     }, [0, 1, 2])
                   }
-                  if(cnt > 150) {
+                  if(cnt > 300) {
                       Plotly.relayout("<%= key %>",{
                           xaxis:{
-                              range: [time[cnt-150],time[cnt]]
+                              range: [time[cnt-300],time[cnt]]
                           }
                       });
                   }
                   if(++cnt === pred_v.length) clearInterval(interval);
                 }, 1);
+
               }
+
+              if(<%= key %>){
+                let loss_v = <%= JSON.stringify(result[key].loss) %>;
+                let time = <%- JSON.stringify(result[key].time) %>;
+                document.getElementById("<%= key %>_update_time_text_loss").innerHTML = "Model Update Time: " + time[0];
+
+                let layout = {
+                  legend: {
+                    x: 0.3,
+                    y: 1.2,
+                    "orientation": "h",
+                    font: {size: 20}
+                  },
+                  xaxis: {
+                    title: "Time",
+                    titlefont: {
+                      family: "Courier New, monospace",
+                      size: 20
+                    }
+                  },
+                  yaxis: {
+                    title: "Loss",
+                    titlefont: {
+                      family: "Courier New, monospace",
+                      size: 20
+                    },
+                    rangemode: 'nonnegative',
+                    autorange: true
+                  }
+                };
+
+                Plotly.newPlot("<%= key %>_loss", [{
+                  x: [],
+                  y: [],
+                  name: 'Loss',
+                  mode: 'lines',
+                  line: {color: '#80CAF6'}
+                }, {
+                  x: [],
+                  y: [],
+                  mode: 'markers',
+                  name: 'Update Time',
+                  type: 'scatter',
+                  marker: {
+                    size: 12
+                  }
+                }], layout);
+
+                let cnt = 0;
+
+                let interval = setInterval(function() {
+                  if(loss_v[cnt]==10000){
+                    if (cnt==0){
+                      cnt = 1;
+                    }
+                    Plotly.extendTraces("<%= key %>_loss", {
+                      x: [[time[cnt]], [time[cnt]]],
+                      y: [[loss_v[cnt-1]], [0]]
+                    }, [0, 1])
+                    document.getElementById("<%= key %>_update_time_text_loss").innerHTML = "Model Update Time: " + time[cnt];
+                  } else {
+                    Plotly.extendTraces("<%= key %>_loss", {
+                      x: [[time[cnt]], [time[cnt]]],
+                      y: [[loss_v[cnt]], [-100]]
+                    }, [0, 1])
+                  }
+                  if(cnt > 300) {
+                      Plotly.relayout("<%= key %>_loss",{
+                          xaxis: {
+                              range: [time[cnt-300],time[cnt]]
+                          }
+                      });
+                  }
+                  if(++cnt === loss_v.length) clearInterval(interval);
+                }, 1);
+              }
+
               </script>
             <% } %>
           </div>

@@ -29,8 +29,7 @@
 
     <section id="content-area">
       <div class="heading">
-        <h1>Dashboard</h1>
-        <p><%= title %></p>
+        <h1>Model Management</h1><br>
       </div>
       <button onclick="location.href='input_model'">Deploy Model</button><br><br>
       <div class="cards">
@@ -53,21 +52,16 @@
                     <input type="hidden" name="deploy_model_uuid" value=<%= models[i].UUID %>>
                     <input type="submit" value="Model Info"/>
                   </form>
-                  <% if(models[i].model_state == 'pause') { %>
-                    <form action="/main/restart_model" method="post" style="display: inline;">
-                      <input type="hidden" name="restart_model_uuid" value=<%= models[i].UUID %>>
-                      <input type="submit" value="Restart Deploy"/>
-                    </form>
-                  <% } else { %>
-                    <form action="/main/pause_model" method="post" style="display: inline;">
-                      <input type="hidden" name="pause_model_uuid" value=<%= models[i].UUID %>>
-                      <input type="submit" value="Pause Model"/>
-                    </form>
-                  <% } %>
                   <form action="/main/inference" method="post" style="display: inline;">
                     <input type="hidden" name="inference_model_uuid" value=<%= models[i].UUID %>>
                     <input type="submit" value="Inference Info"/>
                   </form>
+                  <% if(models[i].is_online_train) { %>
+                    <form action="/main/training" method="post" style="display: inline;">
+                      <input type="hidden" name="training_model_uuid" value=<%= models[i].UUID %>>
+                      <input type="submit" value="Training Info"/>
+                    </form>
+                  <% } %>
                   <form action="/main/delete_model" method="post" style="display: inline;">
                     <input type="hidden" name="delete_model_uuid" value=<%= models[i].UUID %>>
                     <input type="submit" value="Delete Model"/>

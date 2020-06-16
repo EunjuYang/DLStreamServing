@@ -48,7 +48,7 @@
           <div class="card">
             <div id="middle">
               <h2>Deploy Options</h2><hr>
-              <h5>Online Learning: <%= model.is_online_train%></h5>
+              <h5>Online Learning: <%= model.is_online_train %></h5>
               <h5>Adaptive Learning: <%= model.is_adaptive %></h5>
               <h5>AMI List: <%= model.ami %></h5>
             </div>
@@ -75,23 +75,23 @@
           <div class="card">
             <div id="middle">
               <h2>Online Learning Options</h2><hr>
-              <% if(model.online_method == 'inc') { %>
+              <% if(model.online_param.online_method == 'inc') { %>
                 <h5>Online Learning Method: Incremental Learning</h5>
               <% } else { %>
                 <h5>Online Learning Method: Continual Learning</h5>
               <% } %>
-              <h5>Batch Size: <%= model.batch_size %></h5>
+              <h5>Batch Size: <%= model.online_param.batch_size %></h5>
             </div>
           </div>
         </div>
-        <% if(model.online_method == 'cont') { %>
+        <% if(model.online_param.online_method == 'cont') { %>
         <div class="col-md-4">
           <div class="card">
             <div id="middle">
               <h2>Continual Learning Options</h2><hr>
-              <h5>Memory Method: <%= model.cont_param.memory_method %></h5>
-              <h5>Schedule: <%= model.cont_param.is_schedule %></h5>
-              <h5>Episodic Memory Size: <%= model.cont_param.episodic_mem_size %></h5>
+              <h5>Memory Method: <%= model.online_param.memory_method %></h5>
+              <h5>Schedule: <%= model.online_param.is_schedule %></h5>
+              <h5>Episodic Memory Size: <%= model.online_param.episodic_mem_size %></h5>
             </div>
           </div>
         </div>

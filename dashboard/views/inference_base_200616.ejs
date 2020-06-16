@@ -78,16 +78,19 @@
                 };
 
                 Plotly.newPlot("<%= key %>", [{
+                  x: [],
                   y: [],
                   name: 'Prediction',
                   mode: 'lines',
                   line: {color: '#80CAF6'}
                 }, {
+                  x: [],
                   y: [],
                   mode: 'lines',
                   name: 'True',
                   line: {color: '#DF56F1'}
                 }, {
+                  x: [],
                   y: [],
                   mode: 'markers',
                   name: 'Update Time',
@@ -105,11 +108,13 @@
                       cnt = 1;
                     }
                     Plotly.extendTraces("<%= key %>", {
+                      x: [[time[cnt]], [time[cnt]], [time[cnt]]],
                       y: [[pred_v[cnt-1]], [true_v[cnt-1]], [0]]
                     }, [0, 1, 2])
                     document.getElementById("<%= key %>_update_time_text").innerHTML = "Model Update Time: " + time[cnt];
                   } else {
                     Plotly.extendTraces("<%= key %>", {
+                      x: [[time[cnt]], [time[cnt]], [time[cnt]]],
                       y: [[pred_v[cnt]], [true_v[cnt]], [-100]]
                     }, [0, 1, 2])
                   }

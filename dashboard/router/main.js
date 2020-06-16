@@ -1,29 +1,51 @@
-module.exports = function(app, fs, upload, grpc, client, mongoose)
+//module.exports = function(app, fs, upload, grpc, client, request, mongoose)
+module.exports = function(app, fs, upload, grpc, client, request, mongoose, instanceTrain, instanceInfer)
 {
     var models = [];
     var target_model = "none";
     var amis = ["ami0", "ami1", "ami2"];
+    var select_model = "none";
 
     var mongo_connet_manager = {};
 
-//    fs.readFile( __dirname + "/../data/model_state.json", 'utf8', function (err, data) {
-//        var models_json = JSON.parse(data);
-
-//        for (var key in models_json) {
-//            models.push(models_json[key])
-//        }
-//    });
+    var db_data_sync = {};
 
     app.get('/',function(req,res){
 
-        var model_count = {"deploy": 0, "pause": 0};
-        for(var i=0, item; item=models[i]; i++) {
-            if (item['model_state']=="deploy") {
-                model_count["deploy"] += 1
+        console.log('******************** gRPC get_deployed_model start');
+
+        client.get_deployed_model({}, function(err, response) {
+            models = []
+            if(!err){
+                console.log('success fetched model lists');
+                console.log(response);
+
+                for (var i=0; i < response["model"].length; i++) {
+                    var model = {
+                        'amis': [],
+                        'input_format': {},
+                        'online_param': {}
+                    };
+                    model['model_name'] = response["model"][i]['name']
+                    model['amis'] = response["model"][i]['amis']
+                    model['input_format'] = response["model"][i]['input_fmt']
+                    model['UUID'] = response["model"][i]['UUID']
+//                    model['create_time'] = response["model"][i]['create_time']
+//                    model['update_time'] = response["model"][i]['update_time']
+                    model['create_time'] = new Date(parseInt(response["model"][i]['create_time'])*1000).toISOString().replace(/T/, ' ').replace(/Z/, '')
+                    model['update_time'] = new Date(parseInt(response["model"][i]['update_time'])*1000).toISOString().replace(/T/, ' ').replace(/Z/, '')
+                    model['is_online_train'] = response["model"][i]['is_online_train']
+                    model['online_param'] = response["model"][i]['online_param']
+                    console.log(model)
+                    models.push(model)
+                }
             } else {
-                model_count["pause"] += 1
+                console.error(err);
             }
-        }
+        });
+
+        var model_count = {"deploy": 0, "pause": 0};
+        model_count["deploy"] = models.length
 
         res.render('index', {
              title: "home",
@@ -33,14 +55,40 @@ module.exports = function(app, fs, upload, grpc, client, mongoose)
 
     app.get('/main/home',function(req,res){
 
-        var model_count = {"deploy": 0, "pause": 0};
-        for(var i=0, item; item=models[i]; i++) {
-            if (item['model_state']=="deploy") {
-                model_count["deploy"] += 1
+        console.log('******************** gRPC get_deployed_model start');
+
+        client.get_deployed_model({}, function(err, response) {
+            models = []
+            if(!err){
+                console.log('success fetched model lists');
+                console.log(response);
+
+                for (var i=0; i < response["model"].length; i++) {
+                    var model = {
+                        'amis': [],
+                        'input_format': {},
+                        'online_param': {}
+                    };
+                    model['model_name'] = response["model"][i]['name']
+                    model['amis'] = response["model"][i]['amis']
+                    model['input_format'] = response["model"][i]['input_fmt']
+                    model['UUID'] = response["model"][i]['UUID']
+//                    model['create_time'] = response["model"][i]['create_time']
+//                    model['update_time'] = response["model"][i]['update_time']
+                    model['create_time'] = new Date(parseInt(response["model"][i]['create_time'])*1000).toISOString().replace(/T/, ' ').replace(/Z/, '')
+                    model['update_time'] = new Date(parseInt(response["model"][i]['update_time'])*1000).toISOString().replace(/T/, ' ').replace(/Z/, '')
+                    model['is_online_train'] = response["model"][i]['is_online_train']
+                    model['online_param'] = response["model"][i]['online_param']
+                    console.log(model)
+                    models.push(model)
+                }
             } else {
-                model_count["pause"] += 1
+                console.error(err);
             }
-        }
+        });
+
+        var model_count = {"deploy": 0, "pause": 0};
+        model_count["deploy"] = models.length
 
         res.render('index', {
             title: "home",
@@ -74,8 +122,10 @@ module.exports = function(app, fs, upload, grpc, client, mongoose)
                     model['amis'] = response["model"][i]['amis']
                     model['input_format'] = response["model"][i]['input_fmt']
                     model['UUID'] = response["model"][i]['UUID']
-                    model['create_time'] = response["model"][i]['create_time']
-                    model['update_time'] = response["model"][i]['update_time']
+//                    model['create_time'] = response["model"][i]['create_time']
+//                    model['update_time'] = response["model"][i]['update_time']
+                    model['create_time'] = new Date(parseInt(response["model"][i]['create_time'])*1000).toISOString().replace(/T/, ' ').replace(/Z/, '')
+                    model['update_time'] = new Date(parseInt(response["model"][i]['update_time'])*1000).toISOString().replace(/T/, ' ').replace(/Z/, '')
                     model['is_online_train'] = response["model"][i]['is_online_train']
                     model['online_param'] = response["model"][i]['online_param']
                     console.log(model)
@@ -170,6 +220,36 @@ module.exports = function(app, fs, upload, grpc, client, mongoose)
         call.end();
         });
 
+        client.get_deployed_model({}, function(err, response) {
+            models = []
+            if(!err){
+                console.log('success fetched model lists');
+                console.log(response);
+                
+                for (var i=0; i < response["model"].length; i++) {
+                    var model = {
+                        'amis': [],
+                        'input_format': {},
+                        'online_param': {}
+                    };
+                    model['model_name'] = response["model"][i]['name']
+                    model['amis'] = response["model"][i]['amis']
+                    model['input_format'] = response["model"][i]['input_fmt']
+                    model['UUID'] = response["model"][i]['UUID']
+//                    model['create_time'] = response["model"][i]['create_time']
+//                    model['update_time'] = response["model"][i]['update_time']
+                    model['create_time'] = new Date(parseInt(response["model"][i]['create_time'])*1000).toISOString().replace(/T/, ' ').replace(/Z/, '')
+                    model['update_time'] = new Date(parseInt(response["model"][i]['update_time'])*1000).toISOString().replace(/T/, ' ').replace(/Z/, '')
+                    model['is_online_train'] = response["model"][i]['is_online_train']
+                    model['online_param'] = response["model"][i]['online_param']
+                    console.log(model)
+                    models.push(model)
+                }
+            } else {
+                console.error(err);
+            }
+        });
+        console.log(models)
 
         res.render('model_management', {
             title: "model_management",
@@ -205,13 +285,50 @@ module.exports = function(app, fs, upload, grpc, client, mongoose)
 // Todo...
         //
         console.log('******************** gRPC stop_deployment');
-        let call = client.stop_deployment(function (error, response) {
-            console.log("Reports successfully generated");
-            console.log(response);
-        });
+        client.stop_deployment({name: target_model['model_name']}, function (error, response) {
+            if(!error){
+                console.log('Model is deleted Successfully')
+            }
+            else{
+                console.error(error)
+            }
+        })
 
-        call.write({name: target_model['model_name']});
-        call.end();
+        if (select_model.model_name == target_model.model_name){
+            select_model = "none";
+        }
+
+        console.log('******************** gRPC get_deployed_model start');
+
+        client.get_deployed_model({}, function(err, response) {
+            models = []
+            if(!err){
+                console.log('success fetched model lists');
+                console.log(response);
+
+                for (var i=0; i < response["model"].length; i++) {
+                    var model = {
+                        'amis': [],
+                        'input_format': {},
+                        'online_param': {}
+                    };
+                    model['model_name'] = response["model"][i]['name']
+                    model['amis'] = response["model"][i]['amis']
+                    model['input_format'] = response["model"][i]['input_fmt']
+                    model['UUID'] = response["model"][i]['UUID']
+//                    model['create_time'] = response["model"][i]['create_time']
+//                    model['update_time'] = response["model"][i]['update_time']
+                    model['create_time'] = new Date(parseInt(response["model"][i]['create_time'])*1000).toISOString().replace(/T/, ' ').replace(/Z/, '')
+                    model['update_time'] = new Date(parseInt(response["model"][i]['update_time'])*1000).toISOString().replace(/T/, ' ').replace(/Z/, '')
+                    model['is_online_train'] = response["model"][i]['is_online_train']
+                    model['online_param'] = response["model"][i]['online_param']
+                    console.log(model)
+                    models.push(model)
+                }
+            } else {
+                console.error(err);
+            }
+        });
 
         res.render('model_management', {
             title: "model_management",
@@ -250,14 +367,15 @@ module.exports = function(app, fs, upload, grpc, client, mongoose)
 
         for(var i=0, item; item=models[i]; i++) {
             if (item['UUID']==req.body.deploy_model_uuid) {
-                target_model = item
+                target_model = item;
+                select_model = item;
                 break
             }
         }
-
+        console.log(target_model['amis']);
         var txt = "";
-        for (var j = 0; j < target_model['amis'].length; j++) {
-            txt = txt + target_model['amis'][j] + " ";
+        for (var j = 0; j < target_model['amis']['ami_id'].length; j++) {
+            txt = txt + target_model['amis']['ami_id'][j] + " ";
         }
 
         target_model['ami'] = txt
@@ -268,108 +386,231 @@ module.exports = function(app, fs, upload, grpc, client, mongoose)
         })
     });
 
-    app.post('/main/restart_model', function(req, res){
-
-        for(var i=0, item; item=models[i]; i++) {
-            if (item['UUID']==req.body.restart_model_uuid) {
-                target_model = item
-                models[i]['model_state'] = "deploy"
-                target_model['model_state'] = "deploy"
-                break
-            }
-        }
-
-// Todo...
-        // rpc restart_online_train(ModelName) returns (Reply) {}
-        // pause 상태 모델 id 전송해서 deploy restart 전송
-
-        res.render('model_management', {
-            title: "model_management",
-            models: models
-        })
-    });
-
-    app.post('/main/pause_model', function(req, res){
-
-        for(var i=0, item; item=models[i]; i++) {
-            if (item['UUID']==req.body.pause_model_uuid) {
-                target_model = item
-                models[i]['model_state'] = "pause"
-                target_model['model_state'] = "pause"
-                break
-            }
-        }
-
-// Todo...
-        // rpc stop_online_train(ModelName) returns (Reply) {}
-        // deploy 상태 모델 id 전송해서 deploy stop 전송
-
-        res.render('model_management', {
-            title: "model_management",
-            models: models
-        })
-    });
-
     app.post('/main/inference', function(req, res){
+
         for(var i=0, item; item=models[i]; i++) {
             if (item['UUID']==req.body.inference_model_uuid) {
-                target_model = item
+                target_model = item;
+                select_model = item;
                 break
             }
         }
 
-        let Schema = mongoose.Schema;
-        let inferenceSchema = new Schema({
-            amiid: Number,
-            pred: [Number],
-            true: [Number],
-            timestamp: Number
-        }, {
-            collection: target_model['model_name']
-        });
-        let Inference = mongoose.model(target_model['model_name'], inferenceSchema);
+        var updated_time = [];
+
+        console.log('target_model')
+        console.log(target_model)
+
+        var Inference;
+
+        console.log("11111. instanceInfer Info-------")
+        console.log(instanceInfer);
+        while (1) {
+            if (target_model['model_name'] in instanceInfer.models) {
+                instanceInfer.deleteModel(target_model['model_name'])
+            } else {
+                console.log("Mondb Connection State --- Not Connected")
+                var Schema = instanceInfer.Schema;
+                var inferenceSchema = new mongoose.Schema({
+                    amiid: Number,
+                    pred: [Number],
+                    true: [Number],
+                    timestamp: Date,
+                    updated_at_inferencedl: Date
+                }, {
+                    collection: target_model['model_name']
+                });
+        //let Inference = mongoose.model(target_model['model_name'], inferenceSchema);
+                Inference = instanceInfer.model(target_model['model_name'], inferenceSchema);
+                console.log("Mondb Connection State --- Connected Success")
+                break;
+            }
+        }
+
+        console.log("222222. instanceInfer Info-------")
+        console.log(Object.keys(instanceInfer.models));
 
         var inference_result = {};
         for (var j = 0; j < target_model.amis.ami_id.length; j++) {
             var dict = {}
             dict['pred_v'] = []
             dict['true_v'] = []
+            dict['time'] = []
             inference_result[target_model.amis.ami_id[j]] = dict;
         }
 
-        console.log('target_model')
-        console.log(target_model)
-        console.log(inference_result)
+        console.log(Inference)
 
         Inference.find(function(err, response){
             if(err) return res.status(500).send({error: 'database failure'});
 
             var count=0;
-            if (response.length < 3000){
-                count = response.length
-            } else {
-                count = 3000
-            }
-            console.log(response)
+            count = response.length
             console.log(inference_result)
             console.log('db count is ' + count)
             for (var i = 0; i < count; i++) {
-                for (var key in inference_result){
-                    var amiid = response[i].amiid
-                    if (parseInt(key.split('i')[1]) == amiid) {
-                        inference_result[key]['pred_v'] = inference_result[key]['pred_v'].concat(response[i]['pred'])
-                        inference_result[key]['true_v'] = inference_result[key]['true_v'].concat(response[i]['true'])
+                if (typeof response[i]['pred'] !== 'undefined' && response[i]['pred'].length > 0){
+                    for (var key in inference_result){
+                        var amiid = response[i].amiid
+                        if (parseInt(key.split('i')[1]) == amiid) {
+                            inference_result[key]['pred_v'] = inference_result[key]['pred_v'].concat(response[i]['pred']);
+                            inference_result[key]['true_v'] = inference_result[key]['true_v'].concat(response[i]['true']);
+                            var time = new Date(response[i]['timestamp']).toISOString().replace(/T/, ' ').replace(/Z/, '');
+                            for (var j = 0; j < response[i]['pred'].length; j++) {
+                                time = time + '1';
+                                inference_result[key]['time'].push(time);
+                            }
+                        }
+                    }
+                } else {
+                    for (var key in inference_result){
+                        inference_result[key]['pred_v'] = inference_result[key]['pred_v'].concat([10000]);
+                        inference_result[key]['true_v'] = inference_result[key]['true_v'].concat([10000]);
+                        inference_result[key]['time'].push(new Date(response[i]['updated_at_inferencedl']).toISOString().replace(/T/, ' ').replace(/Z/, ''));
+                        updated_time.push(new Date(response[i]['updated_at_inferencedl']).toISOString().replace(/T/, ' ').replace(/Z/, ''));
+                    }
+                }
+            }
+            console.log(inference_result);
+            console.log(updated_time);
+            res.render('inference', {
+                title: "inference",
+                model: target_model,
+                result: inference_result,
+                updated_time: updated_time
+            })
+        })
+        //mongoose.deleteModel(target_model['model_name'])
+        instanceInfer.deleteModel(target_model['model_name'])
+    });
+
+    app.post('/main/training', function(req, res){
+
+        for(var i=0, item; item=models[i]; i++) {
+            if (item['UUID']==req.body.training_model_uuid) {
+                target_model = item;
+                select_model = item;
+                break
+            }
+        }
+        var Training;
+        console.log("111111. instanceTrain Info-------")
+        console.log(instanceTrain);
+
+        while (1) {
+            if (target_model['model_name'] in instanceTrain.models) {
+                instanceTrain.deleteModel(target_model['model_name'])
+            } else {
+                console.log("Mondb Connection State --- Not Connected")
+                var Schema = instanceTrain.Schema;
+                var trainingSchema = new mongoose.Schema({
+                    amiid: Number,
+                    pred: [Number],
+                    true: [Number],
+                    loss: [Number],
+                    timestamp: Date,
+                    update_at_onlinedl: Date
+                }, {
+                    collection: target_model['model_name']
+                });
+                Training = instanceTrain.model(target_model['model_name'], trainingSchema);
+                console.log("Mondb Connection State --- Connected Success")
+                break;
+            }
+        }
+
+        console.log("222222. instanceTrain Info-------")
+        console.log(Object.keys(instanceTrain.models));
+
+        console.log(target_model);
+        var training_result = {};
+        for (var j = 0; j < target_model.amis.ami_id.length; j++) {
+            var dict = {}
+            dict['pred_v'] = []
+            dict['true_v'] = []
+            dict['loss'] = []
+            dict['time'] = []
+            training_result[target_model.amis.ami_id[j]] = dict;
+        }
+
+        console.log('target_model')
+        console.log(target_model)
+
+        Training.find(function(err, response){
+            if(err) return res.status(500).send({error: 'database failure'});
+
+            var count = 0;
+            count = response.length
+            console.log(training_result)
+            console.log('db count is ' + count)
+            for (var i = 0; i < count; i++) {
+                if (typeof response[i]['pred'] !== 'undefined' && response[i]['pred'].length > 0){
+                    for (var key in training_result){
+                        var amiid = response[i].amiid
+                        if (parseInt(key.split('i')[1]) == amiid) {
+                            training_result[key]['pred_v'] = training_result[key]['pred_v'].concat(response[i]['pred'])
+                            training_result[key]['true_v'] = training_result[key]['true_v'].concat(response[i]['true'])
+                            var time = new Date(response[i]['timestamp']).toISOString().replace(/T/, ' ').replace(/Z/, '');
+                            for (var j = 0; j < response[i]['pred'].length; j++) {
+                                training_result[key]['loss'] = training_result[key]['loss'].concat(response[i]['loss'])
+                                time = time + '1';
+                                training_result[key]['time'].push(time);
+                            }
+                        }
+                    }
+                } else {
+                    for (var key in training_result){
+                        training_result[key]['pred_v'] = training_result[key]['pred_v'].concat([10000]);
+                        training_result[key]['true_v'] = training_result[key]['true_v'].concat([10000]);
+                        training_result[key]['loss'] = training_result[key]['loss'].concat([10000]);
+                        training_result[key]['time'].push(new Date(response[i]['update_at_onlinedl']).toISOString().replace(/T/, ' ').replace(/Z/, ''));
                     }
                 }
             }
 
-            res.render('inference', {
-                title: "inference",
+            console.log(training_result);
+
+            res.render('training', {
+                title: "training",
                 model: target_model,
-                result: inference_result
+                result: training_result
             })
         })
-        mongoose.deleteModel(target_model['model_name'])
+        //mongoose.deleteModel(target_model['model_name'])
+        instanceTrain.deleteModel(target_model['model_name'])
+    });
+
+    app.get('/main/deploy_model_info', function(req, res){
+        if (select_model == "none") {
+            res.render('model_management', {
+                title: "model_management",
+                models: models
+            })
+        } else {
+
+        }
+    });
+
+    app.get('/main/inference', function(req, res){
+        if (select_model == "none") {
+            res.render('model_management', {
+                title: "model_management",
+                models: models
+            })
+        } else {
+
+        }
+    });
+
+    app.get('/main/training', function(req, res){
+        if (select_model == "none") {
+            res.render('model_management', {
+                title: "model_management",
+                models: models
+            })
+        } else {
+
+        }
     });
 
     function guid() {
