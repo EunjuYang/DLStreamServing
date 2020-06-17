@@ -50,7 +50,6 @@ class InferenceDL:
             post = {}
             post['amiid'] = i.item()
             _result_tmp = result[np.where(id.reshape((id.shape[0],))==i)].tolist()
-            self.saved = _result_tmp[-1]
             post['pred'] = _result_tmp # shape is (batch,)
             _true_tmp = data[np.where(id.reshape((id.shape[0],))==i)].tolist()
             post['true'] = _true_tmp # shape is (batch,)
