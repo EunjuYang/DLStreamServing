@@ -196,7 +196,8 @@ class OnlineDL:
 
         self.model_manager = ModelManager(repo_addr, model_name)
         self.model_path = "/tmp/%s_init" % model_name
-        self.model_manager.download_model(self.model_path)
+        while not self.model_manager.download_model(self.model_path):
+            pass
         self.model_uppath = "/tmp/%s" % model_name # will be "(model_name)_current"
 
         self.model_filename = self.model_path.split('/')[-1]
