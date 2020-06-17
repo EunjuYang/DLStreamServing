@@ -56,7 +56,8 @@ class InferenceDL:
             post['true'] = _true_tmp # shape is (batch,)
             post['timestamp'] = datetime.datetime.now()
             if self.saved_value:
-                _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp.insert(0,self.saved_value)[:-1]) - np.asarray(_true_tmp))**2)).item()
+                _result_tmp.insert(0, self.saved_value)
+                _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp[:-1]) - np.asarray(_true_tmp))**2)).item()
             else:
                 _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp[:-1]) - np.asarray(_true_tmp[1:]))**2)).item()
             self.saved_value = _result_tmp[-1]
