@@ -50,16 +50,15 @@ class InferenceDL:
             post = {}
             post['amiid'] = i.item()
             _result_tmp = result[np.where(id.reshape((id.shape[0],))==i)].tolist()
-            print('hi this is {}'.format(_result_tmp))
             post['pred'] = _result_tmp # shape is (batch,)
             _true_tmp = data[np.where(id.reshape((id.shape[0],))==i)].tolist()
             post['true'] = _true_tmp # shape is (batch,)
             post['timestamp'] = datetime.datetime.now()
-            if not self.saved_value:
+            if self.saved_value:
                 _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp.insert(0,self.saved_value)[:-1]) - np.asarray(_true_tmp))**2)).item()
             else:
-                self.saved_value = _result_tmp[-1]
                 _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp[:-1]) - np.asarray(_true_tmp[1:]))**2)).item()
+            self.saved_value = _result_tmp[-1]
             if(_tmp_loss):
                 post['loss'] = _tmp_loss
             else:
