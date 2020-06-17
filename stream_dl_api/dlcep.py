@@ -208,21 +208,30 @@ class IncStreamDLStub(StreamDLStub):
         return int(math.floor(f))
 
     def _adaptive_batch_train_generator(self, test_err, FIX=None):
-
-        self.err_queue.push(test_err)
+        tq_queue_size = len(self.buffer)
+        print('first tq_queue_size is ', tq_queue_size)
 
         timestep = time.time() - self.last_timestep if self.last_timestep else 0
+        print('first timestep is ', timestep)
 
-        self.ld = (len(self.buffer) - self.prev_queue_size) / timestep if self.last_timestep else 1
+        self.ld = (tq_queue_size - self.prev_queue_size) / timestep if self.last_timestep else 1
+        print('first self.ld is ', self.ld)
 
         req = self.beta1 / (1 - self.beta * self.ld)
+        print('first req is ', req)
+
         if timestep < req:
             time.sleep(req - timestep)
             timestep = req
+        print('second timestep is ', timestep)
+
+        tq_queue_size = len(self.buffer)
+        print('second tq_queue_size is ', tq_queue_size)
 
         amount = sys.maxsize
         while len(self.buffer) < amount:
             tmpe = (timestep - self.beta1) / (self.beta * self.ld * timestep)
+            print('tmpe is ', tmpe)
 
             if FIX:
                 batch_star = FIX
@@ -232,8 +241,9 @@ class IncStreamDLStub(StreamDLStub):
             epoch = max(int(math.floor(epoch)), 1)
             amount = max(self.na(batch_star), 1)
 
-            if len(self.buffer) < amount:
-                time.sleep((amount - len(self.buffer)) / self.ld - timestep)
+            if tq_queue_size < amount:
+                time.sleep((amount - tq_queue_size) / self.ld)
+                tq_queue_size = len(self.buffer)
             elif int(math.floor(len(self.buffer))) > amount:
                 print(f'check len(self.buffer) is {len(self.buffer)} and amount size is {amount}')
 
@@ -251,6 +261,7 @@ class IncStreamDLStub(StreamDLStub):
 
         self.prev_queue_size = len(self.buffer)
         self.last_timestep = time.time()
+        self.err_queue.push(test_err)
 
         return (x_batch, y_batch, id_batch, epoch)
 
