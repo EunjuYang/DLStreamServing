@@ -222,7 +222,7 @@ class OnlineDL:
 
                 # recompile the keras model
                 model.compile(optimizer=model.optimizer, loss=model.loss,
-                              metrics=model.metrics + [_k_subabs],
+                              metrics=model.metrics,
                               loss_weights=model.loss_weights,
                               sample_weight_mode=model.sample_weight_mode if model.sample_weight_mode else None,
                               weighted_metrics=_wm,
