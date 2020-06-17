@@ -127,7 +127,7 @@ class IncStreamDLStub(StreamDLStub):
 
         super(IncStreamDLStub, self).__init__(kafka_bk, cep_id, stream_bk, batch_size, dtype, lb_size, lf_size, prefix)
         self.ld = 1
-        self.last_timestep = 0
+        self.last_timestep = time.time()
         self.err_queue = SizeQueue(5, 0.3)
         self.prev_queue_size = 0
         self.precision = 1e-10
@@ -210,11 +210,12 @@ class IncStreamDLStub(StreamDLStub):
     def _adaptive_batch_train_generator(self, test_err, FIX=None):
         tq_queue_size = len(self.buffer)
         print('first tq_queue_size is ', tq_queue_size)
-
-        timestep = time.time() - self.last_timestep if self.last_timestep else 0
+        while not(tq_queue_size - self.prev_queue_size):
+            time.sleep(1)
+        timestep = time.time() - self.last_timestep
         print('first timestep is ', timestep)
 
-        self.ld = (tq_queue_size - self.prev_queue_size) / timestep if self.last_timestep else 1
+        self.ld = (tq_queue_size - self.prev_queue_size) / timestep
         print('first self.ld is ', self.ld)
 
         req = self.beta1 / (1 - self.beta * self.ld)
@@ -229,7 +230,7 @@ class IncStreamDLStub(StreamDLStub):
         print('second tq_queue_size is ', tq_queue_size)
 
         amount = sys.maxsize
-        while len(self.buffer) < amount:
+        while tq_queue_size < amount:
             tmpe = (timestep - self.beta1) / (self.beta * self.ld * timestep)
             print('tmpe is ', tmpe)
 
@@ -247,6 +248,8 @@ class IncStreamDLStub(StreamDLStub):
             elif int(math.floor(len(self.buffer))) > amount:
                 print(f'check len(self.buffer) is {len(self.buffer)} and amount size is {amount}')
 
+        print('hi amount ', amount)
+        print('hi epoch ', epoch)
         x_shape = (amount, self.lb_size)
         y_shape = (amount, self.lf_size)
         x_batch = np.zeros(shape=x_shape, dtype=self.dtype)
