@@ -44,7 +44,8 @@ class InferenceDL:
     def consume(self, data, id):
         result = self.model.predict(data.reshape(self.batch_input_shape), batch_size=data.shape[0])
         result = result.reshape((data.shape[0],))
-        
+        data = data[:,-1]
+
         # Do not use encode and decode
         for i in np.unique(id):
             post = {}
