@@ -208,10 +208,11 @@ class IncStreamDLStub(StreamDLStub):
         return int(math.floor(f))
 
     def _adaptive_batch_train_generator(self, test_err, FIX=None):
+        while not(len(self.buffer) - self.prev_queue_size):
+            time.sleep(1)
         tq_queue_size = len(self.buffer)
         print('first tq_queue_size is ', tq_queue_size)
-        while not(tq_queue_size - self.prev_queue_size):
-            time.sleep(1)
+
         timestep = time.time() - self.last_timestep
         print('first timestep is ', timestep)
 
