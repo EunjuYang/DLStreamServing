@@ -63,10 +63,10 @@ class InferenceDL:
                 else:
                     _tmp_loss = None
             self.saved_value = _result_tmp[-1]
-            if(_tmp_loss):
-                post['loss'] = _tmp_loss
-            else:
-                post['loss'] = self.saved_loss_list[self.cursor_saved_loss_list - 1]
+            if not _tmp_loss:
+                _tmp_loss = self.saved_loss_list[self.cursor_saved_loss_list - 1]
+            post['loss'] = _tmp_loss
+
             if len(self.saved_loss_list)==self.max_count:
                 self.saved_loss_list[self.cursor_saved_loss_list]=_tmp_loss
                 self.cursor_saved_loss_list += 1
