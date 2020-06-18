@@ -30,6 +30,8 @@
     <section id="content-area">
       <div class="heading">
         <h1 style="font-size: 40px;">Deploy Model Name: <%= model.model_name %></h1>
+         <button id="append_ami" style="display: inline;"> Append AMI Data </button> 
+         <span id="update_db" style="font-size: 18px;"></span>
       </div>
       <div class="cards">
         <div class="card">
@@ -38,24 +40,26 @@
             <div class="col-md-full">
               <div class="card">
                 <h3>AMI ID: <%= key %></h3>
-                <div id="<%= key %>_update_time_text" style="display: inline; font-size: 18px;"></div>
-                  <div id="<%= key %>" style="-ms-overflow-style:none; margin: 0px -40px 0px -20px;"></div>
+                <span id="<%= key %>_update_time_text" style="font-size: 18px;"></span>
+                <div id="<%= key %>" style="-ms-overflow-style:none; margin: 0px -40px 0px -20px;"></div>
               </div>
             </div>
             <div class="col-md-full">
               <div class="card">
                 <h3>AMI ID: <%= key %></h3>
                 <div id="<%= key %>_update_time_text_loss" style="display: inline; font-size: 18px;"></div>
-                  <div id="<%= key %>_loss" style="-ms-overflow-style:none; margin: 0px -40px 0px -20px;"></div>
+                <div id="<%= key %>_loss" style="-ms-overflow-style:none; margin: 0px -40px 0px -20px;"></div>
               </div>
             </div>
             <% } %>
             <% for(var key in result) { %>
               <script>
               if(<%= key %>){
+                let model_name = <%- JSON.stringify(model.model_name) %>;
                 let pred_v = <%= JSON.stringify(result[key].pred_v) %>;
                 let true_v = <%= JSON.stringify(result[key].true_v) %>;
                 let time = <%- JSON.stringify(result[key].time) %>;
+                let metadata = <%- JSON.stringify(metadata) %>;
                 document.getElementById("<%= key %>_update_time_text").innerHTML = "Model Update Time: " + time[0];
 
                 let layout = {
@@ -78,8 +82,7 @@
                       family: "Courier New, monospace",
                       size: 20
                     },
-                    rangemode: 'nonnegative',
-                    autorange: true
+                    range: [0, metadata[1]]
                   }
                 };
 
@@ -105,35 +108,88 @@
 
                 let cnt = 0;
 
-                let interval = setInterval(function() {
-                  if(pred_v[cnt]==10000){
-                    if (cnt==0){
-                      cnt = 1;
+                if (typeof pred_v[0] !== 'undefined') {
+                  let interval = setInterval(function() {
+                    if(pred_v[cnt]==-1){
+                      if (cnt==0){
+                        cnt = 1;
+                      }
+                      Plotly.extendTraces("<%= key %>", {
+                        y: [[pred_v[cnt-1]], [true_v[cnt-1]], [0]]
+                      }, [0, 1, 2])
+                      document.getElementById("<%= key %>_update_time_text").innerHTML = "Model Update Time: " + time[cnt];
+                    } else {
+                      Plotly.extendTraces("<%= key %>", {
+                        y: [[pred_v[cnt]], [true_v[cnt]], [-100]]
+                      }, [0, 1, 2])
                     }
-                    Plotly.extendTraces("<%= key %>", {
-                      y: [[pred_v[cnt-1]], [true_v[cnt-1]], [0]]
-                    }, [0, 1, 2])
-                    document.getElementById("<%= key %>_update_time_text").innerHTML = "Model Update Time: " + time[cnt];
-                  } else {
-                    Plotly.extendTraces("<%= key %>", {
-                      y: [[pred_v[cnt]], [true_v[cnt]], [-100]]
-                    }, [0, 1, 2])
-                  }
-                  if(cnt > 300) {
+                    if(cnt > 300) {
                       Plotly.relayout("<%= key %>",{
-                          xaxis:{
-                              range: [time[cnt-300],time[cnt]]
-                          }
+                        xaxis:{
+                          range: [time[cnt-300],time[cnt]]
+                        }
                       });
-                  }
-                  if(++cnt === pred_v.length) clearInterval(interval);
-                }, 1);
+                    }
+                    if(++cnt === pred_v.length) clearInterval(interval);
+                  }, 1);
+                }
+                (function(){
+                  $(document).ready(function() {
+                    $('#append_ami').click(function(){
+                      $.ajax({
+                        url: '/main/training/append_ami',
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {model_name: model_name, db: metadata[0], metadata: metadata},
+                        success: function(result) {
+                          if (result) {
+                            document.getElementById("update_db").innerHTML = " | Load Data/New Data/All Data - " + result.origin_count + "/" + result.new_count + "/" + result.db_count;
+                            if (typeof result.result["<%= key %>"].pred_v[0] !== 'undefined') {
+                              pred_v = pred_v.concat(result.result["<%= key %>"].pred_v);
+                              true_v = true_v.concat(result.result["<%= key %>"].true_v);
+                              time = time.concat(result.result["<%= key %>"].time);
+                              metadata = result.max_value;
 
+                              let interval = setInterval(function() {
+                                if(pred_v[cnt]==-1){
+                                  if (cnt==0){
+                                    cnt = 1;
+                                  }
+                                  Plotly.extendTraces("<%= key %>", {
+                                    y: [[pred_v[cnt-1]], [true_v[cnt-1]], [0]]
+                                  }, [0, 1, 2])
+                                  document.getElementById("<%= key %>_update_time_text").innerHTML = "Model Update Time: " + time[cnt];
+                                } else {
+                                  Plotly.extendTraces("<%= key %>", {
+                                    y: [[pred_v[cnt]], [true_v[cnt]], [-100]]
+                                  }, [0, 1, 2])
+                                }
+                                if(cnt > 150) {
+                                  Plotly.relayout("<%= key %>",{
+                                    xaxis:{
+                                      range: [time[cnt-150],time[cnt]]
+                                    },
+                                    yaxis: {
+                                      range: [0, metadata[1]]
+                                    }
+                                  });
+                                }
+                                if(++cnt === pred_v.length) clearInterval(interval);
+                              }, 1);
+                            }
+                          }
+                        }
+                      });
+                    });
+                  });
+                })();
               }
 
               if(<%= key %>){
+                let model_name = <%- JSON.stringify(model.model_name) %>;
                 let loss_v = <%= JSON.stringify(result[key].loss) %>;
                 let time = <%- JSON.stringify(result[key].time) %>;
+                let metadata = <%- JSON.stringify(metadata) %>;
                 document.getElementById("<%= key %>_update_time_text_loss").innerHTML = "Model Update Time: " + time[0];
 
                 let layout = {
@@ -156,8 +212,7 @@
                       family: "Courier New, monospace",
                       size: 20
                     },
-                    rangemode: 'nonnegative',
-                    autorange: true
+                    range: [0, metadata[2]]
                   }
                 };
 
@@ -178,31 +233,80 @@
 
                 let cnt = 0;
 
-                let interval = setInterval(function() {
-                  if(loss_v[cnt]==10000){
-                    if (cnt==0){
-                      cnt = 1;
+                if (typeof loss_v[0] !== 'undefined') {
+                  let interval = setInterval(function() {
+                    if(loss_v[cnt]==-1){
+                      if (cnt==0){
+                        cnt = 1;
+                      }
+                      Plotly.extendTraces("<%= key %>_loss", {
+                        y: [[loss_v[cnt-1]], [0]]
+                      }, [0, 1])
+                      document.getElementById("<%= key %>_update_time_text_loss").innerHTML = "Model Update Time: " + time[cnt];
+                    } else {
+                      Plotly.extendTraces("<%= key %>_loss", {
+                        y: [[loss_v[cnt]], [-100]]
+                      }, [0, 1])
                     }
-                    Plotly.extendTraces("<%= key %>_loss", {
-                      y: [[loss_v[cnt-1]], [0]]
-                    }, [0, 1])
-                    document.getElementById("<%= key %>_update_time_text_loss").innerHTML = "Model Update Time: " + time[cnt];
-                  } else {
-                    Plotly.extendTraces("<%= key %>_loss", {
-                      y: [[loss_v[cnt]], [-100]]
-                    }, [0, 1])
-                  }
-                  if(cnt > 300) {
+                    if(cnt > 300) {
                       Plotly.relayout("<%= key %>_loss",{
-                          xaxis: {
-                              range: [time[cnt-300],time[cnt]]
-                          }
+                        xaxis: {
+                          range: [time[cnt-300],time[cnt]]
+                        }
                       });
-                  }
-                  if(++cnt === loss_v.length) clearInterval(interval);
-                }, 1);
-              }
+                    }
+                    if(++cnt === loss_v.length) clearInterval(interval);
+                  }, 1);
+                }
+                (function(){
+                  $(document).ready(function() {
+                    $('#append_ami').click(function(){
+                      $.ajax({
+                        url: '/main/training/append_ami',
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {model_name: model_name, db: metadata[0], metadata: metadata},
+                        success: function(result) {
+                          if (result) {
+                            if (typeof result.result["<%= key %>"].loss[0] !== 'undefined') {
+                              loss_v = loss_v.concat(result.result["<%= key %>"].loss);
+                              time = time.concat(result.result["<%= key %>"].time);
+                              metadata = result.max_value;
 
+                              let interval = setInterval(function() {
+                                if(loss_v[cnt]==-1){
+                                  if (cnt==0){
+                                    cnt = 1;
+                                  }
+                                  Plotly.extendTraces("<%= key %>_loss", {
+                                    y: [[loss_v[cnt-1]], [0]]
+                                  }, [0, 1])
+                                  document.getElementById("<%= key %>_update_time_text_loss").innerHTML = "Model Update Time: " + time[cnt];
+                                } else {
+                                  Plotly.extendTraces("<%= key %>_loss", {
+                                    y: [[loss_v[cnt]], [-100]]
+                                  }, [0, 1])
+                                }
+                                if(cnt > 300) {
+                                  Plotly.relayout("<%= key %>_loss",{
+                                    xaxis:{
+                                      range: [time[cnt-300],time[cnt]]
+                                    },
+                                    yaxis: {
+                                      range: [0, metadata[2]]
+                                    }
+                                  });
+                                }
+                                if(++cnt === loss_v.length) clearInterval(interval);
+                              }, 1);
+                            }
+                          }
+                        }
+                      });
+                    });
+                  });
+                })();
+              }
               </script>
             <% } %>
           </div>

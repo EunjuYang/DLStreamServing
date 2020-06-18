@@ -49,8 +49,8 @@ const client = new streamDLbroker('143.248.148.131:50091', grpc.credentials.crea
 //instanceTrain.connect('mongodb://192.168.54.145:27017/onlinedl', {useNewUrlParser: true});
 //instanceInfer.connect('mongodb://192.168.54.145:27017/inference', {useNewUrlParser: true});
 
-var instanceTrain = mongoose.createConnection('mongodb://192.168.54.145:27017/onlinedl', {useNewUrlParser: true});
-var instanceInfer = mongoose.createConnection('mongodb://192.168.54.145:27017/inference', {useNewUrlParser: true});
+var instanceTrain = mongoose.createConnection('mongodb://192.168.153.193:27017/onlinedl', {useNewUrlParser: true});
+var instanceInfer = mongoose.createConnection('mongodb://192.168.153.193:27017/inference', {useNewUrlParser: true});
 
 //var db1 = instanceTrain.connection;
 //db1.on('error', console.error);
