@@ -47,7 +47,7 @@ RUN python3.6 -m pip install wheel
 RUN python3.6 -m pip install setuptools --upgrade
 RUN python3.6 -m pip install tensorflow==2.1.0 $MIRROR
 RUN python3.6 -m pip install quadprog
-RUN python3.6 -m pip install scikit-learn
+RUN python3.6 -m pip install scikit-learn $MIRROR
 RUN python3.6 -m pip install confluent-kafka $MIRROR
 RUN python3.6 -m pip install kafka
 RUN python3.6 -m pip install pymongo $MIRROR

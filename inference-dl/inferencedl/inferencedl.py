@@ -31,21 +31,55 @@ class InferenceDL:
         self.collection = self.db[model_name]
         self.collection.remove({})
         self.model_name = model_name
+        #TODO: for saved pred-value
+        self.saved_value = None
+        self.saved_loss_list = [100.0]
+        self.max_count = 3
+        self.cursor_saved_loss_list = 1
+        
+
 
     # Below consume-function implement feedforward and send results to database (mongodb)
     def consume(self, data, id):
         result = self.model.predict(data.reshape(self.batch_input_shape), batch_size=data.shape[0])
         result = result.reshape((data.shape[0],))
         data = data[:,-1]
+
         # Do not use encode and decode
         for i in np.unique(id):
             post = {}
             post['amiid'] = i.item()
-            post['pred'] = result[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
-            post['true'] = data[np.where(id.reshape((id.shape[0],))==i)].tolist() # shape is (batch,)
+            _result_tmp = result[np.where(id.reshape((id.shape[0],))==i)].tolist()
+            post['pred'] = _result_tmp # shape is (batch,)
+            _true_tmp = data[np.where(id.reshape((id.shape[0],))==i)].tolist()
+            post['true'] = _true_tmp # shape is (batch,)
             post['timestamp'] = datetime.datetime.now()
+            if self.saved_value:
+                _result_tmp_for_loss = [self.saved_value] + _result_tmp
+                _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp_for_loss[:-1]) - np.asarray(_true_tmp))**2)).item()
+            else:
+                if _result_tmp[:-1] and _true_tmp[1:]:
+                    _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp[:-1]) - np.asarray(_true_tmp[1:]))**2)).item()
+                else:
+                    _tmp_loss = None
+            self.saved_value = _result_tmp[-1]
+            if(_tmp_loss):
+                post['loss'] = _tmp_loss
+            else:
+                post['loss'] = self.saved_loss_list[self.cursor_saved_loss_list - 1]
+            if len(self.saved_loss_list)==self.max_count:
+                self.saved_loss_list[self.cursor_saved_loss_list]=_tmp_loss
+                self.cursor_saved_loss_list += 1
+            else:
+                self.saved_loss_list.append(_tmp_loss)
+                self.cursor_saved_loss_list += 1
+            if self.cursor_saved_loss_list == self.max_count:
+                self.cursor_saved_loss_list = 0
+            post['average_loss'] = np.mean(np.asarray(self.saved_loss_list)).item()
+            
             self.collection.insert_one(post)
-
+        #TODO: change this to support multi-ami
+        
         if self.model_manager.download_model(self.save_path):
             tmp_model = tf.keras.models.load_model(self.save_path)
 

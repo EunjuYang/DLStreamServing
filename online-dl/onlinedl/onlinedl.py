@@ -222,7 +222,7 @@ class OnlineDL:
 
                 # recompile the keras model
                 model.compile(optimizer=model.optimizer, loss=model.loss,
-                              metrics=model.metrics + [_k_subabs],
+                              metrics=model.metrics,
                               loss_weights=model.loss_weights,
                               sample_weight_mode=model.sample_weight_mode if model.sample_weight_mode else None,
                               weighted_metrics=_wm,
@@ -437,7 +437,7 @@ class IncrementalDL(OnlineDL):
         inp = []
         profile = []
         batch = 32
-        epoch = 30
+        epoch = 15
 
         # We checked longer delay when first calling model.fit() than after first.
         # Therefore, for warm-start, we call model.fit() before profiling.
@@ -445,11 +445,12 @@ class IncrementalDL(OnlineDL):
         self.model.fit(dataX, dataY, batch_size=batch, epochs=1, verbose=0, shuffle=False)
 
         for i in range(1, epoch+1, 1):
-            dataX, dataY = self._build_data_for_profile(batch)
-            s = time.time()
-            self.model.fit(dataX, dataY, batch_size=batch, epochs=i, verbose=0, shuffle=False)
-            profile += [time.time() - s]
-            inp += [i]
+            for j in range(1, batch*2, 3):
+                dataX, dataY = self._build_data_for_profile(j)
+                s = time.time()
+                self.model.fit(dataX, dataY, batch_size=j, epochs=i, verbose=0, shuffle=False)
+                profile += [time.time() - s]
+                inp += [i*j]
         lr = LinearRegression().fit(np.array(inp).reshape((-1, 1)), profile)
 
         # restore weight in self.model.weights
@@ -463,5 +464,5 @@ class IncrementalDL(OnlineDL):
             x_shape *= i
         for i in self.batch_output_shape[1:]:
             y_shape *= i
-        return np.random.rand(size*x_shape).reshape(self.batch_input_shape), \
-               np.random.rand(size*y_shape).reshape(self.batch_output_shape)
+        return np.random.uniform(0, 5, size*x_shape).reshape(self.batch_input_shape), \
+               np.random.uniform(0, 5, size*y_shape).reshape(self.batch_output_shape)
