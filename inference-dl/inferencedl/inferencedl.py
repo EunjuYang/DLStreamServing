@@ -36,7 +36,6 @@ class InferenceDL:
         self.saved_loss_list = [100.0]
         self.max_count = 3
         self.cursor_saved_loss_list = 1
-        self.avg_loss = 100.0
         
 
 
@@ -56,22 +55,25 @@ class InferenceDL:
             post['true'] = _true_tmp # shape is (batch,)
             post['timestamp'] = datetime.datetime.now()
             if self.saved_value:
-                _result_tmp.insert(0, self.saved_value)
-                _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp[:-1]) - np.asarray(_true_tmp))**2)).item()
+                _result_tmp_for_loss = [self.saved_value] + _result_tmp
+                _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp_for_loss[:-1]) - np.asarray(_true_tmp))**2)).item()
             else:
-                _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp[:-1]) - np.asarray(_true_tmp[1:]))**2)).item()
+                if _result_tmp[:-1] and _true_tmp[1:]:
+                    _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp[:-1]) - np.asarray(_true_tmp[1:]))**2)).item()
+                else:
+                    _tmp_loss = None
             self.saved_value = _result_tmp[-1]
             if(_tmp_loss):
                 post['loss'] = _tmp_loss
             else:
-                post['loss'] = self.saved_loss_list[-1]
+                post['loss'] = self.saved_loss_list[self.cursor_saved_loss_list - 1]
             if len(self.saved_loss_list)==self.max_count:
                 self.saved_loss_list[self.cursor_saved_loss_list]=_tmp_loss
                 self.cursor_saved_loss_list += 1
             else:
                 self.saved_loss_list.append(_tmp_loss)
                 self.cursor_saved_loss_list += 1
-            if self.cursor_saved_loss_list == 3:
+            if self.cursor_saved_loss_list == self.max_count:
                 self.cursor_saved_loss_list = 0
             post['average_loss'] = np.mean(np.asarray(self.saved_loss_list)).item()
             
