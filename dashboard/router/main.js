@@ -18,7 +18,6 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
             models = []
             if(!err){
                 console.log('success fetched model lists');
-                console.log(response);
 
                 for (var i=0; i < response["model"].length; i++) {
                     var model = {
@@ -59,7 +58,6 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
             models = []
             if(!err){
                 console.log('success fetched model lists');
-                console.log(response);
 
                 for (var i=0; i < response["model"].length; i++) {
                     var model = {
@@ -97,14 +95,12 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
 
 // Todo -> gRPC function - rpc get_deployed_model(null) returns (ModelList) {}
 // Todo -> server(model repo)에서 관리하고 있는 모델 리스트 전송 받기
-
         console.log('******************** gRPC get_deployed_model start');
 
         client.get_deployed_model({}, function(err, response) {
             models = []
             if(!err){
                 console.log('success fetched model lists');
-                console.log(response);
 
                 for (var i=0; i < response["model"].length; i++) {
                     var model = {
@@ -215,8 +211,7 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
             models = []
             if(!err){
                 console.log('success fetched model lists');
-                console.log(response);
-                
+ 
                 for (var i=0; i < response["model"].length; i++) {
                     var model = {
                         'amis': [],
@@ -270,9 +265,7 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
                 target_model = item
             }
         }
-        console.log(target_model['model_name']);
-// Todo...
-        //
+
         console.log('******************** gRPC stop_deployment');
         client.stop_deployment({name: target_model['model_name']}, function (error, response) {
             if(!error){
@@ -293,7 +286,6 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
             models = []
             if(!err){
                 console.log('success fetched model lists');
-                console.log(response);
 
                 for (var i=0; i < response["model"].length; i++) {
                     var model = {
@@ -387,8 +379,6 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
         console.log(target_model)
 
         var Inference;
-        console.log("11111. instanceInfer Info-------")
-        console.log(instanceInfer);
         while (1) {
             if (target_model['model_name'] in instanceInfer.models) {
                 instanceInfer.deleteModel(target_model['model_name'])
@@ -406,20 +396,16 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
                 }, {
                     collection: target_model['model_name']
                 });
-        //let Inference = mongoose.model(target_model['model_name'], inferenceSchema);
                 Inference = instanceInfer.model(target_model['model_name'], inferenceSchema);
                 console.log("Mondb Connection State --- Connected Success")
                 break;
             }
         }
 
-        console.log("222222. instanceInfer Info-------")
-        console.log(Object.keys(instanceInfer.models));
-
         var updated_time = [];
         var max_value = [0, 0, 0, 0];
-
         var inference_result = {};
+
         for (var j = 0; j < target_model.amis.ami_id.length; j++) {
             var dict = {}
             dict['pred_v'] = []
@@ -430,14 +416,11 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
             inference_result[target_model.amis.ami_id[j]] = dict;
         }
 
-        console.log(Inference)
-
         Inference.find(function(err, response){
             if(err) return res.status(500).send({error: 'database failure'});
 
             var count=0;
             count = response.length
-            console.log(inference_result)
             console.log(response)
             console.log('db count is ' + count)
             for (var i = 0; i < count; i++) {
@@ -495,7 +478,6 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
                 metadata: max_value
             })
         })
-        //mongoose.deleteModel(target_model['model_name'])
         instanceInfer.deleteModel(target_model['model_name'])
     });
 
@@ -510,8 +492,6 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
         }
 
         var Training;
-        console.log("111111. instanceTrain Info-------")
-        console.log(instanceTrain);
         while (1) {
             if (target_model['model_name'] in instanceTrain.models) {
                 instanceTrain.deleteModel(target_model['model_name'])
@@ -533,12 +513,10 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
                 break;
             }
         }
-        console.log("222222. instanceTrain Info-------")
-        console.log(Object.keys(instanceTrain.models));
 
         var max_value = [0, 0, 0];
-
         var training_result = {};
+
         for (var j = 0; j < target_model.amis.ami_id.length; j++) {
             var dict = {}
             dict['pred_v'] = []
@@ -556,7 +534,7 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
 
             var count = 0;
             count = response.length
-            console.log(training_result)
+            console.log(response)
             console.log('db count is ' + count)
             for (var i = 0; i < count; i++) {
                 if (typeof response[i]['pred'] !== 'undefined' && response[i]['pred'].length > 0){
@@ -603,7 +581,6 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
                 metadata: max_value
             })
         })
-        //mongoose.deleteModel(target_model['model_name'])
         instanceTrain.deleteModel(target_model['model_name'])
     });
 
@@ -620,8 +597,6 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
         }
 
         var Inference;
-        console.log("11111. instanceInfer Info-------")
-        console.log(instanceInfer);
         while (1) {
             if (target_model['model_name'] in instanceInfer.models) {
                 instanceInfer.deleteModel(target_model['model_name'])
@@ -639,17 +614,15 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
                 }, {
                     collection: target_model['model_name']
                 });
-        //let Inference = mongoose.model(target_model['model_name'], inferenceSchema);
                 Inference = instanceInfer.model(target_model['model_name'], inferenceSchema);
                 console.log("Mondb Connection State --- Connected Success")
                 break;
             }
         }
-        console.log("222222. instanceInfer Info-------")
-        console.log(Object.keys(instanceInfer.models));
 
         var updated_time = [];
         var inference_result = {};
+
         for (var j = 0; j < target_model.amis.ami_id.length; j++) {
             var dict = {}
             dict['pred_v'] = []
@@ -660,15 +633,13 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
             inference_result[target_model.amis.ami_id[j]] = dict;
         }
 
-        console.log(Inference)
-
         Inference.find(function(err, response){
             if(err) return res.status(500).send({error: 'database failure'});
 
             var count=0;
             var new_response = response.slice(origin_count);
             count = new_response.length
-            console.log(inference_result)
+            console.log(new_response)
             console.log('db count is ' + count)
             for (var i = 0; i < count; i++) {
                 if (typeof new_response[i]['pred'] !== 'undefined' && new_response[i]['pred'].length > 0){
@@ -679,8 +650,8 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
                             inference_result[key]['true_v'] = inference_result[key]['true_v'].concat(new_response[i]['true']);
                             var time = new Date(new_response[i]['timestamp']).toISOString().replace(/T/, ' ').replace(/Z/, '');
                             for (var j = 0; j < new_response[i]['pred'].length; j++) {
-                                inference_result[key]['loss'] = inference_result[key]['loss'].concat(response[i]['loss'])
-                                inference_result[key]['average_loss'] = inference_result[key]['average_loss'].concat(response[i]['average_loss'])
+                                inference_result[key]['loss'] = inference_result[key]['loss'].concat(new_response[i]['loss'])
+                                inference_result[key]['average_loss'] = inference_result[key]['average_loss'].concat(new_response[i]['average_loss'])
                                 inference_result[key]['time'].push(time);
                             }
                         }
@@ -743,8 +714,6 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
         var max_value = req.query.metadata;
         var origin_count = req.query.db;
 
-        console.log(model_name);
-
         for(var i=0, item; item=models[i]; i++) {
             if (item['model_name']==model_name) {
                 target_model = item;
@@ -753,9 +722,6 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
         }
 
         var Training;
-        console.log("111111. instanceTrain Info-------")
-        console.log(instanceTrain);
-
         while (1) {
             if (target_model['model_name'] in instanceTrain.models) {
                 instanceTrain.deleteModel(target_model['model_name'])
@@ -778,10 +744,6 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
             }
         }
 
-        console.log("222222. instanceTrain Info-------")
-        console.log(Object.keys(instanceTrain.models));
-
-        console.log(target_model);
         var training_result = {};
         for (var j = 0; j < target_model.amis.ami_id.length; j++) {
             var dict = {}
@@ -798,7 +760,7 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
             var count=0;
             var new_response = response.slice(origin_count);
             count = new_response.length
-            console.log(training_result)
+            console.log(new_response)
             console.log('db count is ' + count)
             for (var i = 0; i < count; i++) {
                 if (typeof new_response[i]['pred'] !== 'undefined' && new_response[i]['pred'].length > 0){
@@ -859,9 +821,7 @@ module.exports = function(app, fs, upload, grpc, client, request, mongoose, inst
     });
 
     app.get('/main/deploy_model_info', function(req, res){
-        console.log(select_model);
         if (select_model == "none") {
-            console.log("go to model_management page")
             res.render('model_management', {
                 title: "model_management",
                 models: models
