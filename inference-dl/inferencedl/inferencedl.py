@@ -33,7 +33,7 @@ class InferenceDL:
         self.model_name = model_name
         #TODO: for saved pred-value
         self.saved_value = None
-        self.saved_loss_list = [100.0]
+        self.saved_loss_list = [2.0]
         self.max_count = 3
         self.cursor_saved_loss_list = 1
         
@@ -63,10 +63,10 @@ class InferenceDL:
                 else:
                     _tmp_loss = None
             self.saved_value = _result_tmp[-1]
-            if(_tmp_loss):
-                post['loss'] = _tmp_loss
-            else:
-                post['loss'] = self.saved_loss_list[self.cursor_saved_loss_list - 1]
+            if not _tmp_loss:
+                _tmp_loss = self.saved_loss_list[self.cursor_saved_loss_list - 1]
+            post['loss'] = _tmp_loss
+
             if len(self.saved_loss_list)==self.max_count:
                 self.saved_loss_list[self.cursor_saved_loss_list]=_tmp_loss
                 self.cursor_saved_loss_list += 1
@@ -92,4 +92,3 @@ class InferenceDL:
                 post = {}
                 post['updated_at_inferencedl'] = datetime.datetime.now()
                 self.collection.insert_one(post)
-
