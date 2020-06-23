@@ -6,6 +6,7 @@ import os
 
 from onlinedl.onlinedl import *
 from stream_dl_api.dlcep import *
+import numpy as np
 
 # This is main code for TEST
 if __name__ == '__main__':
@@ -36,6 +37,8 @@ if __name__ == '__main__':
     prefix = os.environ['PREFIX']
 
     base_loss = 10000.0
+    saved_loss_list = []
+    saved_batch_list = []
 
     is_adaptive = os.environ['IS_ADAPTIVE'].lower() == 'true' # optional for ContinualDL, Not used for Incremental
 
@@ -59,10 +62,15 @@ if __name__ == '__main__':
         while True:
             x_batch, y_batch, id_batch, scailed_epoch = strstub.batch_train_generator(training_error)
             training_error = trainer.consume(x_batch, y_batch, id_batch, scailed_epoch)
-            if save_weights:
-                if trainer._loss < base_loss * 0.999999:
-                    base_loss = trainer._loss
+            saved_batch_list.append(len(x_batch))
+            saved_loss_list.append(trainer._loss)
+            if sum(saved_batch_list) >= (96*3):
+                now_average_loss = np.mean(np.asarray(saved_loss_list))
+                saved_loss_list.pop(0)
+                saved_batch_list.pop(0)
+                if now_average_loss < base_loss:
                     trainer.save()
+                    base_loss = now_average_loss
 
     elif online_method == 'cont':
         trainer = ContinualDL(model_name=model_name,
@@ -87,11 +95,15 @@ if __name__ == '__main__':
         while True:
             _, x_batch, y_batch, id_batch = next(stream_generator)
             trainer.consume(x_batch, y_batch, id_batch)
-
-            if save_weights:
-                if trainer._loss < base_loss*0.999999:
-                    base_loss = trainer._loss
+            saved_batch_list.append(len(x_batch))
+            saved_loss_list.append(trainer._loss)
+            if sum(saved_batch_list) >= (96 * 3):
+                now_average_loss = np.mean(np.asarray(saved_loss_list))
+                saved_loss_list.pop(0)
+                saved_batch_list.pop(0)
+                if now_average_loss < base_loss:
                     trainer.save()
+                    base_loss = now_average_loss
 
 
     else:
