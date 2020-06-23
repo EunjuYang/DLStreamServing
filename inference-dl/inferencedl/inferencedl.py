@@ -33,9 +33,9 @@ class InferenceDL:
         self.model_name = model_name
         #TODO: for saved pred-value
         self.saved_value = None
-        self.saved_loss_list = [2.0]
+        self.saved_loss_list = []
         self.max_count = 3
-        self.cursor_saved_loss_list = 1
+        self.cursor_saved_loss_list = 0
         
 
 
@@ -58,24 +58,25 @@ class InferenceDL:
                 _result_tmp_for_loss = [self.saved_value] + _result_tmp
                 _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp_for_loss[:-1]) - np.asarray(_true_tmp))**2)).item()
             else:
-                if _result_tmp[:-1] and _true_tmp[1:]:
+                if _result_tmp[:-1] and _true_tmp[1:]: # len(_result_tmp) and len(_true_tmp) > 1
                     _tmp_loss = np.sqrt(np.mean((np.asarray(_result_tmp[:-1]) - np.asarray(_true_tmp[1:]))**2)).item()
                 else:
                     _tmp_loss = None
             self.saved_value = _result_tmp[-1]
-            if not _tmp_loss:
-                _tmp_loss = self.saved_loss_list[self.cursor_saved_loss_list - 1]
             post['loss'] = _tmp_loss
 
-            if len(self.saved_loss_list)==self.max_count:
-                self.saved_loss_list[self.cursor_saved_loss_list]=_tmp_loss
-                self.cursor_saved_loss_list += 1
-            else:
-                self.saved_loss_list.append(_tmp_loss)
-                self.cursor_saved_loss_list += 1
-            if self.cursor_saved_loss_list == self.max_count:
+            if _tmp_loss:
+                if len(self.saved_loss_list) == self.max_count:
+                    self.saved_loss_list[self.cursor_saved_loss_list]=_tmp_loss
+                    self.cursor_saved_loss_list += 1
+                else:
+                    self.saved_loss_list.append(_tmp_loss)
+                    self.cursor_saved_loss_list += 1
+                post['average_loss'] = np.mean(np.asarray(self.saved_loss_list)).item()
+            else: # actually it happens only when first batch size is 1.
+                post['average_loss'] = None
+            if self.cursor_saved_loss_list == self.max_count: # ringbuffered self.saved_loss_list
                 self.cursor_saved_loss_list = 0
-            post['average_loss'] = np.mean(np.asarray(self.saved_loss_list)).item()
             
             self.collection.insert_one(post)
         #TODO: change this to support multi-ami
