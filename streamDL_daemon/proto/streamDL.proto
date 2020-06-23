@@ -28,8 +28,8 @@ service streamDLbroker{
     //
     rpc get_deployed_model_with_name(ModelName) returns (Model) {}
 
-    // TODO
-    rpc download_model(ModelName) returns (stream Chunk) {}
+    // Only used for debugging
+    rpc download_model(ModelName) returns (Reply) {}
 }
 
 message Chunk {

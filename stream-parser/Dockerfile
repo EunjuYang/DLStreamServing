@@ -24,7 +24,7 @@ RUN git clone https://github.com/EunjuYang/DLStreamServing.git
 WORKDIR /DLStreamServing/stream-parser
 ENV BOOTSTRAP_SERVERS=Bootstrap_Servers
 ENV LOOK_BACK_WIN_SIZE=Loop_Back_Win_Size
-ENV INPUT_SHIRT_STEP=Input_Shift_Step
+ENV INPUT_SHIFT_STEP=Input_Shift_Step
 ENV SRC=Src
 ENV DST=Dst
 ENV LOOK_FORWARD_STEP=Look_Forward_Step

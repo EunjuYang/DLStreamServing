@@ -84,7 +84,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         if self._is_duplicate_model(request.name):
 
             response = self.modelrepo_client.get_model_info(request.name)
-            print(response)
+            print(response.loss)
             self.Manager[request.name].set_loss(response.loss)
             self.Manager[request.name].set_update_time(response.update_time)
             return self.Manager[request.name].get_model_instance()
@@ -116,7 +116,6 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             online_param['episodic_mem_size'] = chunk.online_param.episodic_mem_size
             online_param['is_schedule'] = chunk.online_param.is_schedule
 
-
         if self._is_duplicate_model(model_name):
             reply = streamDL_pb2.Reply()
             reply.status = False
@@ -129,7 +128,6 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             f.write(chunk.buffer)
             for chunk in request:
                 f.write(chunk.buffer)
-
 
         # create model instance
         dl_instance = streamDL(name=model_name,
@@ -156,10 +154,10 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             #sp_src = self.stream_prefix + ami
             sp_src = "dlstream." + ami
             self._create_stream_parser_instance(name=name,
-                                                        src=sp_src,
-                                                        dst=sp_infer_dst,
-                                                        is_online_train=False,
-                                                        input_format_dict=input_fmt)
+                                                src=sp_src,
+                                                dst=sp_infer_dst,
+                                                is_online_train=False,
+                                                input_format_dict=input_fmt)
             sp_names.append(name)
 
         # create stream parser instance for train
@@ -206,7 +204,8 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
 
         download_path = '/tmp/streamdl/%s' % request.name
         self.modelrepo_client.download_model(request.name, download_path, loss=10000)
-        print('complete to download model %d in %d' % (request.name, download_path))
+        print('complete to download model %s in %s' % (request.name, download_path))
+        return streamDL_pb2.Reply(status=True)
 
     def get_deployed_model(self, request, context):
 
@@ -240,14 +239,23 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         portnum = 59990
         replicas = 1
         namespace = "dlstream"
-        env_dict = {"LOOP_BACK_WIN_SIZE" : str(input_format_dict['look_back_win_size']),
-                    "INPUT_SHIFT_STEP" : str(input_format_dict['input_shift_step']),
-                    "SRC":str(src),
-                    "DST":str(dst),
-                    "LOOK_FORWARD_STEP":str(input_format_dict['look_forward_step']),
-                    "LOOK_FORWARD_WIN_SIZE":str(input_format_dict['look_forward_win_size']),
-                    "IS_ONLINE_TRAIN": str(is_online_train),
-                    "BOOTSTRAP_SERVERS": str(self.KAFKA_BK)}
+
+        if is_online_train:
+            env_dict = {"LOOP_BACK_WIN_SIZE" : str(input_format_dict['look_back_win_size']),
+                        "INPUT_SHIFT_STEP" : str(input_format_dict['input_shift_step']),
+                        "SRC":str(src),
+                        "DST":str(dst),
+                        "LOOK_FORWARD_STEP":str(input_format_dict['look_forward_step']),
+                        "LOOK_FORWARD_WIN_SIZE":str(input_format_dict['look_forward_win_size']),
+                        "IS_ONLINE_TRAIN": str(is_online_train),
+                        "BOOTSTRAP_SERVERS": str(self.KAFKA_BK)}
+        else:
+            env_dict = {"LOOP_BACK_WIN_SIZE" : str(input_format_dict['look_back_win_size']),
+                        "INPUT_SHIFT_STEP" : str(input_format_dict['input_shift_step']),
+                        "SRC":str(src),
+                        "DST":str(dst),
+                        "IS_ONLINE_TRAIN": str(is_online_train),
+                        "BOOTSTRAP_SERVERS": str(self.KAFKA_BK)}
 
         response = self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)
 
@@ -260,6 +268,7 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
         replicas = 1
         namespace = "dlstream"
         portnum = 32449
+        print('create_inference_dl_instance')
         env_dict = {
             "MODEL_NAME": model_name,
             "MODEL_REPO_ADDR": self.ModelRepo['svc_addr'],
@@ -270,9 +279,9 @@ class streamDLbroker(streamDL_pb2_grpc.streamDLbrokerServicer):
             "BATCH_SIZE": str(batch_size),
             "DTYPE": "float32",
             "PREFIX": stream_prefix,
-            "LB_SIZE": str(input_format_dict['look_back_win_size']),
-            "LF_SIZE": str(input_format_dict['look_forward_win_size'])
+            "LB_SIZE": str(input_format_dict['look_back_win_size'])
         }
+        print('create_inference_dl_instance')
 
         response = self.k8s_.deploy(name, img, label, portnum, replicas, namespace, env_dict)
 

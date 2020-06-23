@@ -57,9 +57,12 @@ class StreamParser:
 
         self.loop_back_win_size = int(os.environ['LOOP_BACK_WIN_SIZE'])
         self.input_shift_step = int(os.environ['INPUT_SHIFT_STEP'])
-        self.look_forward_step = int(os.environ['LOOK_FORWARD_STEP'])
-        self.look_forward_win_size = int(os.environ['LOOK_FORWARD_WIN_SIZE'])
         self.is_online_train = os.environ['IS_ONLINE_TRAIN']
+
+        if self.is_online_train:
+            self.look_forward_step = int(os.environ['LOOK_FORWARD_STEP'])
+            self.look_forward_win_size = int(os.environ['LOOK_FORWARD_WIN_SIZE'])
+
         self.bootstrap_servers = os.environ['BOOTSTRAP_SERVERS']
         self.src = os.environ['SRC']
         self.dst = os.environ['DST']
