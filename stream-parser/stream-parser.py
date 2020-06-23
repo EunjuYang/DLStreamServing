@@ -160,6 +160,9 @@ class StreamParser:
                 for j in range(self.loop_back_win_size):
                     data += self.buffer[i][j] + small_delim
 
+                # including id [ (x, ...), (y, ...), id ]
+                data += self.src + small_delim
+
                 # remove one time step data from buffer
                 for _ in range(self.input_shift_step):
                     self.buffer[i].pop(0)
@@ -178,6 +181,9 @@ class StreamParser:
 
             for j in range(self.loop_back_win_size):
                 data += self.buffer[0][j] + small_delim
+
+            # including id [ (x, ...), (y, ...), id ]
+            data += self.src + small_delim
 
             # remove one time step data from buffer
             for _ in range(self.input_shift_step):
