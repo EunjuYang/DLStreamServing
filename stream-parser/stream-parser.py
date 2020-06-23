@@ -2,6 +2,7 @@ import sys, os, threading, json, time
 from confluent_kafka import Consumer as KafkaConsumer
 from confluent_kafka import Producer as KafkaProducer
 from confluent_kafka import KafkaError
+import distutils
 
 
 class Consumer(threading.Thread):
@@ -58,6 +59,7 @@ class StreamParser:
         self.loop_back_win_size = int(os.environ['LOOP_BACK_WIN_SIZE'])
         self.input_shift_step = int(os.environ['INPUT_SHIFT_STEP'])
         self.is_online_train = os.environ['IS_ONLINE_TRAIN']
+        self.is_online_train = (self.is_online_train.lower() == 'true')
 
         if self.is_online_train:
             self.look_forward_step = int(os.environ['LOOK_FORWARD_STEP'])
