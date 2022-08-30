@@ -16,7 +16,7 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.engine('html', require('ejs').renderFile);
 
-var hostname = '143.248.148.131'
+var hostname = ''
 var port = 55560
 var server = app.listen(port, hostname, function(){
     server.setTimeout( 3 * 60 * 1000 )
